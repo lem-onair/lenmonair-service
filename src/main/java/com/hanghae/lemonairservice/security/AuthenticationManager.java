@@ -25,20 +25,15 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
         String loginId = jwtUtil.getUserInfoFromToken(authToken);
 
         return jwtUtil.validateToken(authToken)
-            .flatMap(valid -> {
-                if (valid) {
-                    return userDetailsService.findByUsername(loginId)
-                        .map(user -> {
-                            Set<GrantedAuthority> emptyAuthorities = Collections.emptySet();
-                            return new UsernamePasswordAuthenticationToken(
-                                user,
-                                null,
-                                emptyAuthorities
-                            );
-                        });
-                } else {
-                    return Mono.empty();
-                }
+            .filter(valid -> valid)
+            .flatMap(valid -> userDetailsService.findByUsername(loginId))
+            .map(user -> {
+                Set<GrantedAuthority> emptyAuthorities = Collections.emptySet();
+                return new UsernamePasswordAuthenticationToken(
+                    user,
+                    null,
+                    emptyAuthorities
+                );
             });
     }
 }
