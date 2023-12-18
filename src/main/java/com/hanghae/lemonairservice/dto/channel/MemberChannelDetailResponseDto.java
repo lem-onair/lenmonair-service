@@ -7,17 +7,15 @@ import lombok.Getter;
 @Getter
 public class MemberChannelDetailResponseDto {
 	private Long channelId;
-	private String streamer;
+	private String streamerNickname;
 	private String title;
 	private String hlsUrl;
 
-	public MemberChannelDetailResponseDto(MemberChannel memberChannel){
+	public MemberChannelDetailResponseDto(MemberChannel memberChannel, String hlsUrl) {
 		this.channelId = memberChannel.getId();
-		this.streamer = memberChannel.getStreamer();
+		this.streamerNickname = memberChannel.getStreamerNickname();
 		this.title = memberChannel.getTitle();
-	}
-	public void updateHlsUrl(String hlsUrl){
-		this.hlsUrl= hlsUrl;
+		this.hlsUrl = hlsUrl;
 	}
 
 }
