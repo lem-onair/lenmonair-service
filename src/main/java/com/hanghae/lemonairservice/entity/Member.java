@@ -17,6 +17,8 @@ public class Member {
 
 	private String email;
 
+	private String userid;
+
 	private String password;
 
 	private String name;
@@ -24,9 +26,10 @@ public class Member {
 	private String nickname;
 
 	private String streamKey;
-	public Member(String email, String password, String name, String nickname) {
+	public Member(String email, String password, String userid ,String name, String nickname) {
 		this.email = email;
 		this.password = password;
+		this.userid = userid;
 		this.name = name;
 		this.nickname = nickname;
 		this.streamKey = UUID.randomUUID().toString();
