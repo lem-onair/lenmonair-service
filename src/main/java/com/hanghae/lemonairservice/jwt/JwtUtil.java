@@ -39,33 +39,22 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-
         byte[] bytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(bytes);
     }
 
     // 토큰 생성
-    public String createToken(String email) {
+    public String createToken(String loginId) {
         Date date = new Date();
 
         long TOKEN_TIME = 360 * 60 * 1000L;
         return BEARER_PREFIX +
             Jwts.builder()
-                .setSubject(email)
+                .setSubject(loginId)
                 .setExpiration(new Date(date.getTime() + TOKEN_TIME))
                 .setIssuedAt(date)
                 .signWith(key, signatureAlgorithm)
                 .compact();
-    }
-
-    // Cookie JWT 에 저장
-    public void addJwtToCookie(String token, HttpServletResponse res) {
-        token = URLEncoder.encode(token, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-
-        Cookie cookie = new Cookie(AUTHORIZATION_HEADER, token);
-        cookie.setPath("/");
-
-        res.addCookie(cookie);
     }
 
     public Claims getMemberInfoFromToken(String token) {
@@ -109,5 +98,9 @@ public class JwtUtil {
             log.error("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
         }
         return Mono.just(false);
+    }
+
+    public String getUserInfoFromToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
     }
 }

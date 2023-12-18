@@ -10,4 +10,6 @@ public interface MemberRepository extends ReactiveCrudRepository<Member,Long> {
     Mono<Boolean> existsByEmail(String email);
 
     Mono<Boolean> existsByNickname(String nickname);
+
+    Mono<Member> findByLoginId(String userId);
 }
