@@ -1,8 +1,10 @@
 package com.hanghae.lemonairservice.service;
 
 
+import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.entity.Member;
+import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final MemberChannelService memberChannelService;
+    private final JwtUtil jwtUtil;
 
     private static final String PASSWORD_PATTERN =
         "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
@@ -81,6 +84,19 @@ public class MemberService {
 
     private static boolean validatePassword(String password) {
         return pattern.matcher(password).matches();
+    }
+
+    public Mono<ResponseEntity<String>> login(LoginRequestDto loginRequestDto) {
+        return memberRepository.findByEmail(loginRequestDto.getEmail())
+            .flatMap(member -> {
+                if (passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
+                    String token = jwtUtil.createToken(member.getLoginId());
+                    return Mono.just(ResponseEntity.ok().body(token));
+                } else {
+                    return Mono.just(ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다."));
+                }
+            })
+            .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다.")));
     }
 }
 
