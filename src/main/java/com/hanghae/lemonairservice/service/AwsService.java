@@ -19,12 +19,12 @@ public class AwsService {
 	private String cloudFrontDomain;
 
 	public String getThumbnailCloudFrontUrl(String streamerLoginId) {
-		String key = streamerLoginId + "/thumbnail/" + streamerLoginId + "_thumbnail.jpg";
-		return cloudFrontDomain + amazonS3.getUrl(bucket, key).getPath();
+		String uri = "/" + streamerLoginId + "/thumbnail/" + streamerLoginId + "_thumbnail.jpg";
+		return cloudFrontDomain + uri;
 	}
 
 	public String getM3U8CloudFrontUrl(String streamerLoginId) {
-		String key = streamerLoginId + "/videos/" + "m3u8-" + streamerLoginId + ".m3u8";
-		return cloudFrontDomain + amazonS3.getUrl(bucket, key).getPath();
+		String uri = "/" + streamerLoginId + "/videos/" + "m3u8-" + streamerLoginId + ".m3u8";
+		return cloudFrontDomain + uri;
 	}
 }
