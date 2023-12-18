@@ -1,6 +1,8 @@
 package com.hanghae.lemonairservice.entity;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import lombok.AccessLevel;
@@ -15,17 +17,22 @@ import lombok.Setter;
 public class MemberChannel {
 	@Id
 	private Long id;
-	private Long memberId;
-	private String memberLoginId;
 	private String title;
 	private String streamerNickname;
 	private Boolean onAir;
 
-	public MemberChannel(Long memberId, String memberLoginId, String nickname){
-		this.title = nickname + "의 방송";
-		this.streamerNickname = nickname;
-		this.memberLoginId = memberLoginId;
-		this.memberId = memberId;
+
+	@Column("member_id")
+	private Long memberId;
+
+	@Transient
+	private Member member;
+
+	public MemberChannel(Member member){
+		this.title = member.getNickname() + "의 방송";
+		this.streamerNickname = member.getNickname();
 		this.onAir = false;
+		this.memberId = member.getId();
 	}
+
 }

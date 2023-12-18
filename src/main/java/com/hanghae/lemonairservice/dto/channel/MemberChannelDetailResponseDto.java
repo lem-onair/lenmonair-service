@@ -1,6 +1,5 @@
 package com.hanghae.lemonairservice.dto.channel;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hanghae.lemonairservice.entity.MemberChannel;
 
 import lombok.Getter;
@@ -12,17 +11,11 @@ public class MemberChannelDetailResponseDto {
 	private String title;
 	private String hlsUrl;
 
-	@JsonIgnore
-	private String streamerLoginId;
-
-	public MemberChannelDetailResponseDto(MemberChannel memberChannel){
+	public MemberChannelDetailResponseDto(MemberChannel memberChannel, String hlsUrl) {
 		this.channelId = memberChannel.getId();
 		this.streamerNickname = memberChannel.getStreamerNickname();
 		this.title = memberChannel.getTitle();
-		this.streamerLoginId = memberChannel.getMemberLoginId();
-	}
-	public void updateHlsUrl(String hlsUrl){
-		this.hlsUrl= hlsUrl;
+		this.hlsUrl = hlsUrl;
 	}
 
 }

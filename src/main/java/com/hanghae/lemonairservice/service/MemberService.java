@@ -33,7 +33,7 @@ public class MemberService {
         Mono<Boolean> nicknameExists = memberRepository.existsByNickname(
             signupRequestDto.getNickname());
 
-        Mono<Boolean> useridExists = memberRepository.existsByUserid(signupRequestDto.getUserid());
+        Mono<Boolean> useridExists = memberRepository.existsByLoginId(signupRequestDto.getLoginId());
 
 
 
@@ -63,13 +63,12 @@ public class MemberService {
                     Member newMember = new Member(
                         signupRequestDto.getEmail(),
                         passwordEncoder.encode(signupRequestDto.getPassword()),
-                        signupRequestDto.getUserid(),
-                        signupRequestDto.getName(),
+                        signupRequestDto.getLoginId(),
                         signupRequestDto.getNickname()
                     );
 
                     return memberRepository.save(newMember)
-                        .flatMap(savedMember -> memberChannelService.createChannel(savedMember.getId(), savedMember.getUserid(), savedMember.getNickname()))
+                        .flatMap(savedMember -> memberChannelService.createChannel(savedMember))
                         .log()
                         .map(savedMember -> ResponseEntity.ok().body("회원가입이 완료되었습니다."))
                         .onErrorResume(throwable -> {
