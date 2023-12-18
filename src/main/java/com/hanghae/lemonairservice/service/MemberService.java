@@ -71,7 +71,7 @@ public class MemberService {
                     );
 
                     return memberRepository.save(newMember)
-                        .flatMap(savedMember -> memberChannelService.createChannel(savedMember))
+                        .flatMap(memberChannelService::createChannel)
                         .log()
                         .map(savedMember -> ResponseEntity.ok().body("회원가입이 완료되었습니다."))
                         .onErrorResume(throwable -> {
@@ -87,7 +87,7 @@ public class MemberService {
     }
 
     public Mono<ResponseEntity<String>> login(LoginRequestDto loginRequestDto) {
-        return memberRepository.findByEmail(loginRequestDto.getEmail())
+        return memberRepository.findByLoginId(loginRequestDto.getLogin())
             .flatMap(member -> {
                 if (passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
                     String token = jwtUtil.createToken(member.getLoginId());
