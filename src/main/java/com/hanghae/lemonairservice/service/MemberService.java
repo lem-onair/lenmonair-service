@@ -69,7 +69,7 @@ public class MemberService {
                     );
 
                     return memberRepository.save(newMember)
-                        .flatMap(savedMember -> memberChannelService.createChannel(savedMember.getNickname()))
+                        .flatMap(savedMember -> memberChannelService.createChannel(savedMember.getId(), savedMember.getUserid(), savedMember.getNickname()))
                         .log()
                         .map(savedMember -> ResponseEntity.ok().body("회원가입이 완료되었습니다."))
                         .onErrorResume(throwable -> {

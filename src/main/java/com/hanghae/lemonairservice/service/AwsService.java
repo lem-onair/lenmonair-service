@@ -18,13 +18,13 @@ public class AwsService {
 	@Value("${aws.cloudfront.domain}")
 	private String cloudFrontDomain;
 
-	public String getThumbnailCloudFrontUrl(String streamerName) {
-		String key = streamerName + "/thumbnail/" + streamerName + "_thumbnail.jpg";
+	public String getThumbnailCloudFrontUrl(String streamerLoginId) {
+		String key = streamerLoginId + "/thumbnail/" + streamerLoginId + "_thumbnail.jpg";
 		return cloudFrontDomain + amazonS3.getUrl(bucket, key).getPath();
 	}
 
-	public String getM3U8CloudFrontUrl(String streamerName) {
-		String key = streamerName + "/videos/" + "m3u8-" + streamerName + ".m3u8";
+	public String getM3U8CloudFrontUrl(String streamerLoginId) {
+		String key = streamerLoginId + "/videos/" + "m3u8-" + streamerLoginId + ".m3u8";
 		return cloudFrontDomain + amazonS3.getUrl(bucket, key).getPath();
 	}
 }

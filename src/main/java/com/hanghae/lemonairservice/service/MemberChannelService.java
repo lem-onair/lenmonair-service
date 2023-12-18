@@ -20,8 +20,8 @@ public class MemberChannelService {
 	private final AwsService awsService;
 	private final MemberChannelRepository memberChannelRepository;
 
-	public Mono<MemberChannel> createChannel(String nickname) {
-		return memberChannelRepository.save(new MemberChannel(nickname))
+	public Mono<MemberChannel> createChannel(Long memberId, String memberLoginId, String nickname) {
+		return memberChannelRepository.save(new MemberChannel(memberId, memberLoginId, nickname))
 			.onErrorResume(exception -> Mono.error(new RuntimeException("user의 channel 생성 오류")));
 	}
 
@@ -37,7 +37,7 @@ public class MemberChannelService {
 
 	private void updateThumbnailUrl(MemberChannelResponseDto memberChannelResponseDto) {
 		memberChannelResponseDto.updateThumbnailUrl(
-			awsService.getThumbnailCloudFrontUrl(memberChannelResponseDto.getStreamer()));
+			awsService.getThumbnailCloudFrontUrl(memberChannelResponseDto.getStreamerLoginId()));
 	}
 
 	// TODO: 2023-12-17 postman에서만 빈 mono가 return되는건지 확인해볼 필요가 있다.
@@ -53,6 +53,6 @@ public class MemberChannelService {
 
 	private void updateM3U8Url(MemberChannelDetailResponseDto memberChannelDetailResponseDto) {
 		memberChannelDetailResponseDto.updateHlsUrl(
-			awsService.getM3U8CloudFrontUrl(memberChannelDetailResponseDto.getStreamer()));
+			awsService.getM3U8CloudFrontUrl(memberChannelDetailResponseDto.getStreamerLoginId()));
 	}
 }

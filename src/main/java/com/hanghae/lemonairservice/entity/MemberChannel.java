@@ -4,7 +4,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,13 +15,17 @@ import lombok.Setter;
 public class MemberChannel {
 	@Id
 	private Long id;
+	private Long memberId;
+	private String memberLoginId;
 	private String title;
-	private String streamer;
+	private String streamerNickname;
 	private Boolean onAir;
 
-	public MemberChannel(String nickname){
+	public MemberChannel(Long memberId, String memberLoginId, String nickname){
 		this.title = nickname + "의 방송";
-		this.streamer = nickname;
+		this.streamerNickname = nickname;
+		this.memberLoginId = memberLoginId;
+		this.memberId = memberId;
 		this.onAir = false;
 	}
 }

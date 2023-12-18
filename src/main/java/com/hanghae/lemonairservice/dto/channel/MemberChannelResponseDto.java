@@ -1,5 +1,6 @@
 package com.hanghae.lemonairservice.dto.channel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hanghae.lemonairservice.entity.MemberChannel;
 
 import lombok.Getter;
@@ -7,15 +8,21 @@ import lombok.Getter;
 @Getter
 public class MemberChannelResponseDto {
 	private Long channelId;
-	private String streamer;
+	private String streamerNickname;
 	private String title;
 	private String thumbnailUrl;
-	public MemberChannelResponseDto(MemberChannel memberChannel){
+
+	@JsonIgnore
+	private String streamerLoginId;
+
+	public MemberChannelResponseDto(MemberChannel memberChannel) {
 		this.channelId = memberChannel.getId();
-		this.streamer = memberChannel.getStreamer();
+		this.streamerNickname = memberChannel.getStreamerNickname();
 		this.title = memberChannel.getTitle();
+		this.streamerLoginId = memberChannel.getMemberLoginId();
 	}
-	public void updateThumbnailUrl(String thumbnailUrl){
+
+	public void updateThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
 	}
 }
