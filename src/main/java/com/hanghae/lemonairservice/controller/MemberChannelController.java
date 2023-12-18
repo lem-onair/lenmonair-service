@@ -1,5 +1,6 @@
 package com.hanghae.lemonairservice.controller;
 
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,7 +14,6 @@ import com.hanghae.lemonairservice.service.MemberChannelService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Controller
@@ -25,16 +25,14 @@ public class MemberChannelController {
 	private final MemberChannelService memberChannelService;
 
 	@GetMapping("/channels")
-	public Mono<ResponseEntity<Flux<MemberChannelResponseDto>>> getChannelsByOnAirTrue() {
+	public Mono<ResponseEntity<List<MemberChannelResponseDto>>> getChannelsByOnAirTrue() {
 
 		return memberChannelService.getChannelsByOnAirTrue();
 	}
 
 	@GetMapping("/channels/{channelId}")
-	public Mono<ResponseEntity<Mono<MemberChannelDetailResponseDto>>> getChannelDetail(
+	public Mono<ResponseEntity<MemberChannelDetailResponseDto>> getChannelDetail(
 		@PathVariable("channelId") Long channelId) {
-		Mono<ResponseEntity<Mono<MemberChannelDetailResponseDto>>> result = memberChannelService.getChannelDetail(
-			channelId);
-		return result;
+		return memberChannelService.getChannelDetail(channelId);
 	}
 }

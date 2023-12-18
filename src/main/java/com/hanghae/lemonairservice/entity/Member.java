@@ -17,17 +17,17 @@ public class Member {
 
 	private String email;
 
-	private String password;
+	private String loginId;
 
-	private String name;
+	private String password;
 
 	private String nickname;
 
 	private String streamKey;
-	public Member(String email, String password, String name, String nickname) {
+	public Member(String email, String password, String loginId, String nickname) {
 		this.email = email;
 		this.password = password;
-		this.name = name;
+		this.loginId = loginId;
 		this.nickname = nickname;
 		this.streamKey = UUID.randomUUID().toString();
 	}
