@@ -1,6 +1,7 @@
 package com.hanghae.lemonairservice.service;
 
 
+import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.repository.MemberRepository;
@@ -71,6 +72,19 @@ public class MemberService {
 
     private static boolean validatePassword(String password) {
         return pattern.matcher(password).matches();
+    }
+
+    public Mono<ResponseEntity<String>> login(LoginRequestDto loginRequestDto) {
+        return memberRepository.findByEmail(loginRequestDto.getEmail())
+            .flatMap(member -> {
+                if (passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
+                    // TODO: 2023-12-18  로그인에 성공한 사용자에 대한 토큰을 발급 로직 작성해야 함
+                    return Mono.just(ResponseEntity.ok().body("로그인 성공"));
+                } else {
+                    return Mono.just(ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다."));
+                }
+            })
+            .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다.")));
     }
 }
 
