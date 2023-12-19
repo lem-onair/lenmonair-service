@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
 import com.hanghae.lemonairservice.dto.member.LoginResponseDto;
@@ -41,6 +43,7 @@ public class MemberService {
 
     private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
 
+    @Transactional
     public Mono<ResponseEntity<SignUpResponseDto>> signup(SignUpRequestDto signupRequestDto) {
 
         if (!validatePassword(signupRequestDto.getPassword())) {
@@ -103,24 +106,20 @@ public class MemberService {
     }
 
 
-    public Mono<ResponseEntity<String>> login(LoginRequestDto loginRequestDto) {
-        return memberRepository.findByLoginId(loginRequestDto.getLoginId())
-            .flatMap(member -> {
-                if (passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
-                    return jwtUtil.createToken(member.getLoginId())
-                        .flatMap(token ->
-                            jwtUtil.createRefreshToken(member.getLoginId())
-                                .flatMap(refreshToken ->
-                                    refreshTokenRepository.saveRefreshToken(member.getLoginId(), refreshToken)
-                                        .thenReturn(ResponseEntity.ok()
-                                            .body("Token: " + token + "\n Refresh Token: " + refreshToken))
-                                ));
+    public Mono<ResponseEntity<LoginResponseDto>> login(LoginRequestDto loginRequestDto) {
+        return memberRepository.findByLoginId(loginRequestDto.getLoginId()).flatMap(member -> {
+            if (passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
+                return jwtUtil.createToken(member.getLoginId())
+                    .flatMap(accessToken -> jwtUtil.createRefreshToken(member.getLoginId())
+                        .flatMap(
+                            refreshToken -> refreshTokenRepository.saveRefreshToken(member.getLoginId(), refreshToken)
+                                .thenReturn(
+                                    ResponseEntity.ok().body(new LoginResponseDto(accessToken, refreshToken)))));
 
-                } else {
-                    return Mono.just(ResponseEntity.badRequest().body("아이디 또는 비밀번호가 잘못되었습니다."));
-                }
-            })
-            .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("아이디 또는 비밀번호가 잘못되었습니다.")));
+            } else {
+                return Mono.error(new RuntimeException("비밀번호가 잘못되었습니다."));
+            }
+        }).switchIfEmpty(Mono.error(new RuntimeException("아이디가 잘못되었습니다.")));
     }
 
     public Mono<ResponseEntity<String>> logout(String loginId){
