@@ -26,13 +26,13 @@ public class RtmpController {
 		return streamService.checkStreamValidity(streamerId, streamKey);
 	}
 
-	@PostMapping("/streams/{streamerId}/onair")
-	public Mono<Boolean> startStreamRequestFromRtmpServer(@PathVariable String streamerId) {
-		return streamService.startStreamRequestFromRtmpServer(streamerId);
+	@PostMapping("/streams/{streamerId}/ready")
+	public Mono<Boolean> readyToStream(@PathVariable String streamerId) {
+		return streamService.readyToStream(streamerId);
 	}
 
-	@PostMapping("/streams/{streamerId}/offair")
-	public Mono<Boolean> stopStreamRequestFromRtmpServer(@PathVariable String streamerId) {
-		return streamService.stopStreamRequestFromRtmpServer(streamerId);
+	@PostMapping("/streams/{streamerId}/stop")
+	public Mono<Boolean> stopStream(@PathVariable String streamerId) {
+		return streamService.stopStream(streamerId);
 	}
 }
