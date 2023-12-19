@@ -20,6 +20,10 @@ public class UserDetailsImpl implements UserDetails {
         this.loginId = loginId;
     }
 
+    public Member getMember() {
+        return member;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() { return null; }
 

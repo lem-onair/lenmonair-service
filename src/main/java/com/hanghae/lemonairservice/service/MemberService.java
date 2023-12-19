@@ -6,12 +6,17 @@ import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberRepository;
+import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
+
+import java.security.Principal;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
@@ -23,6 +28,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberChannelService memberChannelService;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     private static final String PASSWORD_PATTERN =
         "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
@@ -90,13 +96,25 @@ public class MemberService {
         return memberRepository.findByLoginId(loginRequestDto.getLogin())
             .flatMap(member -> {
                 if (passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
-                    String token = jwtUtil.createToken(member.getLoginId());
-                    return Mono.just(ResponseEntity.ok().body(token));
+                    return jwtUtil.createToken(member.getLoginId())
+                        .flatMap(token ->
+                            jwtUtil.createRefreshToken(member.getLoginId())
+                                .flatMap(refreshToken ->
+                                    refreshTokenRepository.saveRefreshToken(member.getLoginId(), refreshToken)
+                                        .thenReturn(ResponseEntity.ok()
+                                            .body("Token: " + token + ", Refresh Token: " + refreshToken))
+                                ));
+
                 } else {
                     return Mono.just(ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다."));
                 }
             })
             .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다.")));
+    }
+
+    public Mono<ResponseEntity<String>> logout(String loginId){
+        return refreshTokenRepository.deleteByLoginId(loginId)
+            .flatMap(logout -> Mono.just(ResponseEntity.ok("로그아웃되었습니다.")));
     }
 }
 

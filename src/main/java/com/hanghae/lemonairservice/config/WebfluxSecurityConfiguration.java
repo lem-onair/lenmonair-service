@@ -35,7 +35,7 @@ public class WebfluxSecurityConfiguration {
 		http.csrf(ServerHttpSecurity.CsrfSpec::disable)
 			.formLogin(ServerHttpSecurity.FormLoginSpec::disable)
 			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-			.authorizeExchange((exchanges) -> exchanges.pathMatchers("/**").permitAll().anyExchange().authenticated())
+			.authorizeExchange((exchanges) -> exchanges.pathMatchers("/api/signup","/api/login").permitAll().anyExchange().authenticated())
 			.securityContextRepository(securityContextRepository)
 			.authenticationManager(authenticationManager)
 			.exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(
