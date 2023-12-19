@@ -1,5 +1,6 @@
 package com.hanghae.lemonairservice.controller;
 
+
 import java.security.Principal;
 
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
 import com.hanghae.lemonairservice.dto.member.LoginResponseDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
+import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
 import com.hanghae.lemonairservice.security.PrincipalUtil;
 import com.hanghae.lemonairservice.service.MemberService;
 
@@ -25,7 +27,7 @@ public class MemberController {
 	private final MemberService memberService;
 
 	@PostMapping("/signup")
-	public Mono<ResponseEntity<String>> signup(@RequestBody SignUpRequestDto signupRequestDto) {
+	public Mono<ResponseEntity<SignUpResponseDto>> signup(@RequestBody SignUpRequestDto signupRequestDto){
 		return memberService.signup(signupRequestDto);
 	}
 
