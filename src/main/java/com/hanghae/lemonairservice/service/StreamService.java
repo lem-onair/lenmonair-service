@@ -1,10 +1,10 @@
 package com.hanghae.lemonairservice.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hanghae.lemonairservice.dto.stream.StreamKeyRequestDto;
 import com.hanghae.lemonairservice.entity.Member;
-import com.hanghae.lemonairservice.entity.MemberChannel;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 
@@ -29,19 +29,17 @@ public class StreamService {
 			.thenReturn(true);
 	}
 
+	@Transactional
 	public Mono<Boolean> startStream(String streamerId) {
-		memberRepository.findByLoginId(streamerId)
-			.flatMap(member -> memberChannelRepository.findByMemberId(member.getId())
-				.filter(MemberChannel::getReady)
-				.switchIfEmpty(memberChannel -> {
-					return Mono.just(false);
-				})
-				.doOnNext(memberChannel -> {
+		return memberRepository.findByLoginId(streamerId)
+			.flatMap(member -> memberChannelRepository.findByMemberId(member.getId()).flatMap(memberChannel -> {
+				if (memberChannel.getReady()) {
 					memberChannel.setOnAir(true);
-					memberChannelRepository.save(memberChannel).subscribe();
-				}))
-			.subscribe();
-		return true;
+					return Mono.just(true);
+				} else {
+					return Mono.just(false);
+				}
+			}));
 	}
 
 	public boolean stopStream(String streamName, Member user) {

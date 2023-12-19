@@ -30,7 +30,6 @@ public class MemberController {
 	}
 
 	@PostMapping("/login")
-
 	public Mono<ResponseEntity<LoginResponseDto>> login(@RequestBody LoginRequestDto loginRequestDto) {
 		return memberService.login(loginRequestDto);
 	}
