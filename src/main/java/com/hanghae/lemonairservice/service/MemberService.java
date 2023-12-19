@@ -95,7 +95,7 @@ public class MemberService {
     }
 
     public Mono<ResponseEntity<String>> login(LoginRequestDto loginRequestDto) {
-        return memberRepository.findByLoginId(loginRequestDto.getLogin())
+        return memberRepository.findByLoginId(loginRequestDto.getLoginId())
             .flatMap(member -> {
                 if (passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
                     return jwtUtil.createToken(member.getLoginId())
