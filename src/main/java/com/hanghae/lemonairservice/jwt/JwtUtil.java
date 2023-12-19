@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-
 import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
-
-import io.jsonwebtoken.Claims;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -21,16 +18,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
-import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import lombok.RequiredArgsConstructor;
-
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
@@ -39,55 +27,52 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class JwtUtil {
 
+	public static final String AUTHORIZATION_HEADER = "Authorization";
+	public static final String BEARER_PREFIX = "Bearer ";
+	private final RefreshTokenRepository refreshTokenRepository;
+	private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+	@Value("${jwt.secretKey}")
+	private String secretKey;
+	private Key key;
 
-    private final RefreshTokenRepository refreshTokenRepository;
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String BEARER_PREFIX = "Bearer ";
+	@PostConstruct
+	public void init() {
+		byte[] bytes = Base64.getDecoder().decode(secretKey);
+		key = Keys.hmacShaKeyFor(bytes);
+	}
 
-    @Value("${jwt.secretKey}")
-    private String secretKey;
-    private Key key;
-    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+	// 토큰 생성
+	public Mono<String> createToken(String loginId) {
+		Date date = new Date();
 
-    @PostConstruct
-    public void init() {
-        byte[] bytes = Base64.getDecoder().decode(secretKey);
-        key = Keys.hmacShaKeyFor(bytes);
-    }
+		// long TOKEN_TIME = 900 * 1000L;
+		long TOKEN_TIME = 0L;
 
-    // 토큰 생성
-    public Mono<String> createToken(String loginId) {
-        Date date = new Date();
+		String token = BEARER_PREFIX +
+			Jwts.builder()
+				.setSubject(loginId)
+				.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+				.setIssuedAt(date)
+				.signWith(key, signatureAlgorithm)
+				.compact();
 
-        long TOKEN_TIME = 900 * 1000L;
-        String token = BEARER_PREFIX +
-            Jwts.builder()
-                .setSubject(loginId)
-                .setExpiration(new Date(date.getTime() + TOKEN_TIME))
-                .setIssuedAt(date)
-                .signWith(key, signatureAlgorithm)
-                .compact();
+		return Mono.just(token);
+	}
 
-        return Mono.just(token);
-    }
+	public Mono<String> createRefreshToken(String loginId) {
+		Date date = new Date();
 
+		long TOKEN_TIME = 360 * 60 * 1000L;
+		String token = BEARER_PREFIX +
+			Jwts.builder()
+				.setSubject(loginId)
+				.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+				.setIssuedAt(date)
+				.signWith(key, signatureAlgorithm)
+				.compact();
 
-   public Mono<String> createRefreshToken(String loginId) {
-        Date date = new Date();
-
-        long TOKEN_TIME = 360 * 60 * 1000L;
-        String token = BEARER_PREFIX +
-            Jwts.builder()
-                .setSubject(loginId)
-                .setExpiration(new Date(date.getTime() + TOKEN_TIME))
-                .setIssuedAt(date)
-                .signWith(key, signatureAlgorithm)
-                .compact();
-
-        return Mono.just(token);
-    }
-
-
+		return Mono.just(token);
+	}
 
 	public String substringToken(String tokenValue) {
 		if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
@@ -104,6 +89,7 @@ public class JwtUtil {
 			log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
 		} catch (ExpiredJwtException e) {
 			log.error("Expired JWT token, 만료된 JWT token 입니다.");
+			return Mono.just(false);
 		} catch (UnsupportedJwtException e) {
 			log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
 		} catch (IllegalArgumentException e) {
@@ -112,25 +98,30 @@ public class JwtUtil {
 		return Mono.just(false);
 	}
 
-    public Mono<Boolean> validateRefreshToken(String token) {
-        try {
-            return Mono.just(Jwts.parserBuilder().setSigningKey(key).build()
-                    .parseClaimsJws(token).getBody())
-                .flatMap(tokenBody -> {
-                    if (tokenBody.getSubject().equals("refreshToken")) {
-                        return Mono.just(true);
-                    } else {
-                        return Mono.just(false);
-                    }
-                });
-        } catch (Exception e) {
-            return Mono.just(false);
-        }
-    }
+	public Mono<Boolean> validateRefreshToken(String token) {
+		try {
+			return Mono.just(Jwts.parserBuilder().setSigningKey(key).build()
+					.parseClaimsJws(token).getBody())
+				.flatMap(tokenBody -> {
+					if (tokenBody.getSubject().equals("refreshToken")) {
+						return Mono.just(true);
+					} else {
+						return Mono.just(false);
+					}
+				});
+		} catch (Exception e) {
+			return Mono.just(false);
+		}
+	}
 
-    public String getUserInfoFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
-    }
-
+	public String getUserInfoFromToken(String token) {
+		String result = "";
+		try{
+			result = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+		} catch (ExpiredJwtException e){
+			log.info("만료된 jwt 토큰임");
+		}
+		return result;
+	}
 
 }

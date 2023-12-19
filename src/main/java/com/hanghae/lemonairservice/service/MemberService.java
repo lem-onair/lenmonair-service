@@ -1,10 +1,16 @@
 package com.hanghae.lemonairservice.service;
 
+import java.util.regex.Pattern;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
+import com.hanghae.lemonairservice.dto.member.LoginResponseDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
-import com.hanghae.lemonairservice.dto.member.TokenResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberRepository;
@@ -14,12 +20,6 @@ import java.security.Principal;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -29,7 +29,8 @@ import reactor.util.function.Tuple2;
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final MemberRepository memberRepository;
+  
+   private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final MemberChannelService memberChannelService;
     private final JwtUtil jwtUtil;
@@ -126,6 +127,7 @@ public class MemberService {
         return refreshTokenRepository.deleteByLoginId(loginId)
             .flatMap(logout -> Mono.just(ResponseEntity.ok("로그아웃되었습니다.")));
     }
+
 }
 
 
