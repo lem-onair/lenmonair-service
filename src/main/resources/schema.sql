@@ -16,3 +16,6 @@ CREATE TABLE member_channel
     streamer_nickname   VARCHAR(255) NOT NULL,
     on_air              BOOLEAN NOT NULL
 );
+
+ALTER TABLE member_channel
+ADD started_at DATETIME, ADD ready BOOLEAN NOT NULL;

@@ -45,8 +45,8 @@ public class JwtUtil {
 	public Mono<String> createToken(String loginId) {
 		Date date = new Date();
 
-		// long TOKEN_TIME = 900 * 1000L;
-		long TOKEN_TIME = 0L;
+		long TOKEN_TIME = 900 * 1000L;
+		// long TOKEN_TIME = 0L;
 
 		String token = BEARER_PREFIX +
 			Jwts.builder()
