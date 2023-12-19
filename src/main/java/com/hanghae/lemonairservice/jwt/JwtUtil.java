@@ -71,7 +71,7 @@ public class JwtUtil {
         return Mono.just(token);
     }
 
-   
+
    public Mono<String> createRefreshToken(String loginId) {
         Date date = new Date();
 
@@ -87,19 +87,7 @@ public class JwtUtil {
         return Mono.just(token);
     }
 
-	// 토큰 생성
-	public String createToken(String loginId) {
-		Date date = new Date();
 
-
-		long TOKEN_TIME = 360 * 60 * 1000L;
-		return BEARER_PREFIX + Jwts.builder()
-			.setSubject(loginId)
-			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
-			.setIssuedAt(date)
-			.signWith(key, signatureAlgorithm)
-			.compact();
-	}
 
 	public String substringToken(String tokenValue) {
 		if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
