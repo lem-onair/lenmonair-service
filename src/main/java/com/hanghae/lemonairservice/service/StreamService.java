@@ -1,7 +1,6 @@
 package com.hanghae.lemonairservice.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.hanghae.lemonairservice.dto.stream.StreamKeyRequestDto;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
