@@ -24,11 +24,11 @@ public class Member {
 	private String nickname;
 
 	private String streamKey;
-	public Member(String email, String password, String loginId, String nickname) {
+	public Member(String email, String password, String loginId, String nickname, String streamKey) {
 		this.email = email;
 		this.password = password;
 		this.loginId = loginId;
 		this.nickname = nickname;
-		this.streamKey = UUID.randomUUID().toString();
+		this.streamKey = streamKey;
 	}
 }

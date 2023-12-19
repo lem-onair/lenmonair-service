@@ -2,6 +2,7 @@ package com.hanghae.lemonairservice.controller;
 
 import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
+import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
 import com.hanghae.lemonairservice.dto.member.TokenResponseDto;
 import com.hanghae.lemonairservice.service.MemberService;
 import java.security.Principal;
@@ -25,7 +26,7 @@ public class MemberController {
 	private final MemberService memberService;
 
 	@PostMapping("/signup")
-	public Mono<ResponseEntity<String>> signup(@RequestBody SignUpRequestDto signupRequestDto){
+	public Mono<ResponseEntity<SignUpResponseDto>> signup(@RequestBody SignUpRequestDto signupRequestDto){
 		return memberService.signup(signupRequestDto);
 	}
 
