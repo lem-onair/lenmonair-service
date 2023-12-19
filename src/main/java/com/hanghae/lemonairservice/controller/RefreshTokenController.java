@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hanghae.lemonairservice.dto.refreshtoken.RefreshRequestDto;
-import com.hanghae.lemonairservice.dto.refreshtoken.RefreshResponseDto;
+import com.hanghae.lemonairservice.dto.token.RefreshRequestDto;
+import com.hanghae.lemonairservice.dto.token.RefreshResponseDto;
 import com.hanghae.lemonairservice.service.RefreshTokenService;
 
 import lombok.RequiredArgsConstructor;

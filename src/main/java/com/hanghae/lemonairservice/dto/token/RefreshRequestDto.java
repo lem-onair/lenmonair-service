@@ -1,10 +1,11 @@
-package com.hanghae.lemonairservice.dto.refreshtoken;
+package com.hanghae.lemonairservice.dto.token;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class RefreshRequestDto {
 	private String refreshToken;
 

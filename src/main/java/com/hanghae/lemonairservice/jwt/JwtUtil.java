@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -45,8 +48,8 @@ public class JwtUtil {
 	public Mono<String> createToken(String loginId) {
 		Date date = new Date();
 
-		long TOKEN_TIME = 900 * 1000L;
-		// long TOKEN_TIME = 0L;
+		// long TOKEN_TIME = 900 * 1000L;
+		long TOKEN_TIME = 20 *1000L;
 
 		String token = BEARER_PREFIX +
 			Jwts.builder()
@@ -65,7 +68,8 @@ public class JwtUtil {
 		long TOKEN_TIME = 360 * 60 * 1000L;
 		String token = BEARER_PREFIX +
 			Jwts.builder()
-				.setSubject(loginId)
+				.claim("type", "refreshToken")
+				.claim("sub", loginId)
 				.setExpiration(new Date(date.getTime() + TOKEN_TIME))
 				.setIssuedAt(date)
 				.signWith(key, signatureAlgorithm)
@@ -100,10 +104,11 @@ public class JwtUtil {
 
 	public Mono<Boolean> validateRefreshToken(String token) {
 		try {
+			token = token.substring("Bearer ".length());
 			return Mono.just(Jwts.parserBuilder().setSigningKey(key).build()
 					.parseClaimsJws(token).getBody())
 				.flatMap(tokenBody -> {
-					if (tokenBody.getSubject().equals("refreshToken")) {
+					if (tokenBody.get("type", String.class).equals("refreshToken")) {
 						return Mono.just(true);
 					} else {
 						return Mono.just(false);
@@ -114,14 +119,30 @@ public class JwtUtil {
 		}
 	}
 
-	public String getUserInfoFromToken(String token) {
-		String result = "";
+	public String getUserLoginIdFromToken(String token) {
 		try{
-			result = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+			if(token.startsWith("Bearer ")){
+				token = token.substring("Bearer ".length());
+			}
+			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
 		} catch (ExpiredJwtException e){
-			log.info("만료된 jwt 토큰임");
+			log.info("만료된 jwt 토큰일 경우에만 따로 처리하기");
+
+			return extractLoginIdFromExpiredJwtToken(token).get("sub").asText();
 		}
-		return result;
 	}
 
+	private JsonNode extractLoginIdFromExpiredJwtToken(String jwt) {
+
+		jwt = jwt.substring(jwt.indexOf('.')+1, jwt.lastIndexOf('.'));
+		log.info(jwt);
+		Base64.Decoder decoder = Base64.getUrlDecoder();
+		String claimsString = new String(decoder.decode(jwt));
+		ObjectMapper objectMapper = new ObjectMapper();
+		try {
+			return objectMapper.readTree(claimsString);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("유효기간이 지난 Jwt토큰에서 로그인 ID 추출하는 Json Processing중 예외 발생");
+		}
+	}
 }

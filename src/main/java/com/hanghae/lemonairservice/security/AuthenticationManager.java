@@ -9,11 +9,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import com.hanghae.lemonairservice.dto.refreshtoken.RefreshRequestDto;
+import com.hanghae.lemonairservice.dto.token.RefreshRequestDto;
+import com.hanghae.lemonairservice.dto.token.RefreshResponseDto;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
+import com.hanghae.lemonairservice.service.RefreshTokenService;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -25,14 +26,14 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 	private final JwtUtil jwtUtil;
 	private final UserDetailsServiceImpl userDetailsService;
 	private final RefreshTokenRepository refreshTokenRepository;
+	private final RefreshTokenService refreshTokenService;
 
 	@Override
 	public Mono<Authentication> authenticate(Authentication authentication) {
 		String authToken = authentication.getCredentials().toString();
 		// TODO: 2023-12-19 아래 메서드에서 예외가 발생하므로 아래 refreshTokenRepository.findByLoginId(loginId) 로직은 타지만,
 		//  loginId를 jwt토큰에서 꺼내오지 못했으므로 loginId =""인 상황 
-		
-		String loginId = jwtUtil.getUserInfoFromToken(authToken);
+		String loginId = jwtUtil.getUserLoginIdFromToken(authToken);
 
 		return jwtUtil.validateToken(authToken).flatMap(valid -> {
 			if (valid) {
@@ -60,13 +61,17 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 		// 예시: Refresh Token으로 새로운 Access Token을 발급받는 API 호출이나 직접 로직 구현
 		// 실제로는 해당 로직을 구현해야 합니다.
 		// 예시: return WebClient.create().post().uri("/refresh-token").bodyValue(refreshToken).retrieve().bodyToMono(String.class);
-		String refreshTokenEndpoint = "http://localhost:8081/api/auth/refresh"; // 새로운 Access Token을 발급받는 API 엔드포인트
+		// String refreshTokenEndpoint = "http://localhost:8081/api/auth/refresh"; // 새로운 Access Token을 발급받는 API 엔드포인트
+		//
+		// WebClient.RequestBodySpec request = (WebClient.RequestBodySpec)WebClient.create()
+		// 	.post()
+		// 	.uri(refreshTokenEndpoint)
+		// 	.bodyValue(new RefreshRequestDto(refreshToken)); // Refresh Token을 요청에 첨부
 
-		WebClient.RequestBodySpec request = (WebClient.RequestBodySpec)WebClient.create()
-			.post()
-			.uri(refreshTokenEndpoint)
-			.bodyValue(new RefreshRequestDto(refreshToken)); // Refresh Token을 요청에 첨부
+		return refreshTokenService.refresh(new RefreshRequestDto(refreshToken))
+			.map(RefreshResponseDto::getRefreshToken);
 
-		return request.retrieve().bodyToMono(String.class); // 발급받은 새로운 Access Token을 Mono로 반환
+
+		// return request.retrieve().bodyToMono(String.class); // 발급받은 새로운 Access Token을 Mono로 반환
 	}
 }

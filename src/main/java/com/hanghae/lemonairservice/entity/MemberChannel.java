@@ -1,6 +1,5 @@
 package com.hanghae.lemonairservice.entity;
 
-import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -23,8 +22,6 @@ public class MemberChannel {
 	private String streamerNickname;
 	private Boolean onAir;
 	private LocalDateTime startedAt;
-	private Boolean ready;
-
 
 	@Column("member_id")
 	private Long memberId;
@@ -32,12 +29,11 @@ public class MemberChannel {
 	@Transient
 	private Member member;
 
-	public MemberChannel(Member member){
+	public MemberChannel(Member member) {
 		this.title = member.getNickname() + "의 방송";
 		this.streamerNickname = member.getNickname();
 		this.onAir = false;
 		this.memberId = member.getId();
-		this.ready = false;
 	}
 
 }

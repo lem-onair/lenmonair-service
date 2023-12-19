@@ -1,4 +1,4 @@
-package com.hanghae.lemonairservice.dto.refreshtoken;
+package com.hanghae.lemonairservice.dto.token;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
