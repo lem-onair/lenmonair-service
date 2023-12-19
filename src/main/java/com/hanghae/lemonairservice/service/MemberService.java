@@ -17,10 +17,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MemberService {
 
@@ -102,7 +104,7 @@ public class MemberService {
                                 .flatMap(refreshToken ->
                                     refreshTokenRepository.saveRefreshToken(member.getLoginId(), refreshToken)
                                         .thenReturn(ResponseEntity.ok()
-                                            .body("Token: " + token + ", Refresh Token: " + refreshToken))
+                                            .body("Token: " + token + "\n Refresh Token: " + refreshToken))
                                 ));
 
                 } else {

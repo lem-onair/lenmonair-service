@@ -47,7 +47,7 @@ public class JwtUtil {
     public Mono<String> createToken(String loginId) {
         Date date = new Date();
 
-        long TOKEN_TIME = 360 * 60 * 1000L;
+        long TOKEN_TIME = 900 * 1000L;
         String token = BEARER_PREFIX +
             Jwts.builder()
                 .setSubject(loginId)
@@ -119,7 +119,7 @@ public class JwtUtil {
 
     public Mono<Boolean> validateRefreshToken(String token) {
         try {
-            return Mono.just(Jwts.parserBuilder().setSigningKey(secretKey.getBytes()).build()
+            return Mono.just(Jwts.parserBuilder().setSigningKey(key).build()
                     .parseClaimsJws(token).getBody())
                 .flatMap(tokenBody -> {
                     if (tokenBody.getSubject().equals("refreshToken")) {
@@ -134,7 +134,7 @@ public class JwtUtil {
     }
 
     public String getUserInfoFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(secretKey.getBytes()).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
     }
 
 }
