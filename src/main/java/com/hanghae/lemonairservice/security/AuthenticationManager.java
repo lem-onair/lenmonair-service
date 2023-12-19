@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.hanghae.lemonairservice.dto.refreshtoken.RefreshRequestDto;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
 
@@ -61,7 +62,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 		WebClient.RequestBodySpec request = (WebClient.RequestBodySpec)WebClient.create()
 			.post()
 			.uri(refreshTokenEndpoint)
-			.bodyValue(refreshToken); // Refresh Token을 요청에 첨부
+			.bodyValue(new RefreshRequestDto(refreshToken)); // Refresh Token을 요청에 첨부
 
 		return request.retrieve().bodyToMono(String.class); // 발급받은 새로운 Access Token을 Mono로 반환
 	}
