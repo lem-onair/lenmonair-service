@@ -4,12 +4,18 @@ import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.dto.member.TokenResponseDto;
 import com.hanghae.lemonairservice.service.MemberService;
-import lombok.RequiredArgsConstructor;
+import java.security.Principal;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.hanghae.lemonairservice.security.PrincipalUtil;
+
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -24,13 +30,13 @@ public class MemberController {
 	}
 
 	@PostMapping("/login")
-	public Mono<ResponseEntity<?>> signup(@RequestBody LoginRequestDto loginRequestDto){
+
+	public Mono<ResponseEntity<String>> login(@RequestBody LoginRequestDto loginRequestDto){
 		return memberService.login(loginRequestDto);
 	}
-//
-//	@PostMapping("/logout")
-//	public ResponseEntity logout(@Valid @RequestBody SignUpRequestDto signupRequestDto){
-//		memberService.signup(signupRequestDto);
-//		return ResponseEntity.status(HttpStatus.CREATED).body("회원가입에 성공하였습니다.");
-//	}
+
+	@PostMapping("/logout")
+	public Mono<ResponseEntity<String>> logout(@AuthenticationPrincipal Principal user){
+			return memberService.logout(PrincipalUtil.getMember(user).getLoginId());
+	}
 }
