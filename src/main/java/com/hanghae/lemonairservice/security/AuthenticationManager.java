@@ -29,6 +29,9 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 	@Override
 	public Mono<Authentication> authenticate(Authentication authentication) {
 		String authToken = authentication.getCredentials().toString();
+		// TODO: 2023-12-19 아래 메서드에서 예외가 발생하므로 아래 refreshTokenRepository.findByLoginId(loginId) 로직은 타지만,
+		//  loginId를 jwt토큰에서 꺼내오지 못했으므로 loginId =""인 상황 
+		
 		String loginId = jwtUtil.getUserInfoFromToken(authToken);
 
 		return jwtUtil.validateToken(authToken).flatMap(valid -> {

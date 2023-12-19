@@ -45,7 +45,9 @@ public class JwtUtil {
 	public Mono<String> createToken(String loginId) {
 		Date date = new Date();
 
-		long TOKEN_TIME = 900 * 1000L;
+		// long TOKEN_TIME = 900 * 1000L;
+		long TOKEN_TIME = 0L;
+
 		String token = BEARER_PREFIX +
 			Jwts.builder()
 				.setSubject(loginId)
@@ -87,6 +89,7 @@ public class JwtUtil {
 			log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
 		} catch (ExpiredJwtException e) {
 			log.error("Expired JWT token, 만료된 JWT token 입니다.");
+			return Mono.just(false);
 		} catch (UnsupportedJwtException e) {
 			log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
 		} catch (IllegalArgumentException e) {
@@ -112,7 +115,13 @@ public class JwtUtil {
 	}
 
 	public String getUserInfoFromToken(String token) {
-		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+		String result = "";
+		try{
+			result = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+		} catch (ExpiredJwtException e){
+			log.info("만료된 jwt 토큰임");
+		}
+		return result;
 	}
 
 }
