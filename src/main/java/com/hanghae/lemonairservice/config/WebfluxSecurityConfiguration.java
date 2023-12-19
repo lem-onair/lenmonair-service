@@ -13,19 +13,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 
-@Configuration
 @EnableWebFluxSecurity
+@Configuration
 @RequiredArgsConstructor
 public class WebfluxSecurityConfiguration {
 
-    private AuthenticationManager authenticationManager;
-    private SecurityContextRepository securityContextRepository;
+    private final AuthenticationManager authenticationManager;
+    private final SecurityContextRepository securityContextRepository;
 
 
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        http
+        return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -40,9 +40,8 @@ public class WebfluxSecurityConfiguration {
                     .fromRunnable(() -> serverWebExchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED)))
                 .accessDeniedHandler((serverWebExchange, e) -> Mono
                     .fromRunnable(() -> serverWebExchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN)))
-            );
-
-        return http.build();
+            )
+            .build();
     }
     @Bean
     public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
