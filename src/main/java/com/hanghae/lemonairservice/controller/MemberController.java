@@ -1,6 +1,5 @@
 package com.hanghae.lemonairservice.controller;
 
-
 import java.security.Principal;
 
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,7 @@ public class MemberController {
 	private final MemberService memberService;
 
 	@PostMapping("/signup")
-	public Mono<ResponseEntity<SignUpResponseDto>> signup(@RequestBody SignUpRequestDto signupRequestDto){
+	public Mono<ResponseEntity<SignUpResponseDto>> signup(@RequestBody SignUpRequestDto signupRequestDto) {
 		return memberService.signup(signupRequestDto);
 	}
 

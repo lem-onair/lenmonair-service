@@ -18,4 +18,4 @@ CREATE TABLE member_channel
 );
 
 ALTER TABLE member_channel
-ADD started_at DATETIME, ADD ready BOOLEAN NOT NULL;
+ADD started_at DATETIME;
