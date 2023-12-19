@@ -1,7 +1,5 @@
 package com.hanghae.lemonairservice.rtmp.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,12 +21,18 @@ public class RtmpController {
 	private final StreamService streamService;
 
 	@PostMapping("/streams/{streamerId}/check")
-	public Mono<Boolean> checkStreamValidity(@PathVariable String streamerId, @RequestBody StreamKeyRequestDto streamKey) {
+	public Mono<Boolean> checkStreamValidity(@PathVariable String streamerId,
+		@RequestBody StreamKeyRequestDto streamKey) {
 		return streamService.checkStreamValidity(streamerId, streamKey);
 	}
 
-	@PostMapping("/streams/{streamerId}/streaming")
-	public Mono<Boolean> startStreamRequestFromRtmpServer(@PathVariable String streamerId){
+	@PostMapping("/streams/{streamerId}/onair")
+	public Mono<Boolean> startStreamRequestFromRtmpServer(@PathVariable String streamerId) {
 		return streamService.startStreamRequestFromRtmpServer(streamerId);
+	}
+
+	@PostMapping("/streams/{streamerId}/offair")
+	public Mono<Boolean> stopStreamRequestFromRtmpServer(@PathVariable String streamerId) {
+		return streamService.stopStreamRequestFromRtmpServer(streamerId);
 	}
 }
