@@ -32,7 +32,7 @@ public class RtmpController {
 	}
 
 	@PostMapping("/streams/{streamerId}/stop")
-	public Mono<Boolean> stopStream(@PathVariable String streamerId) {
-		return streamService.stopStream(streamerId);
+	public Mono<Boolean> stopStreamingFromRtmpServer(@PathVariable String streamerId) {
+		return streamService.stopStreamFromRtmpServer(streamerId);
 	}
 }

@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hanghae.lemonairservice.security.UserDetailsImpl;
@@ -29,25 +28,26 @@ public class StreamController {
 
 	@PostMapping("/onair")
 	public Mono<ResponseEntity<String>> startStream(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-		String streamerId = userDetails.getLoginId();
-		return streamService.startStream(streamerId)
+		return streamService.startStream(userDetails.getMember())
 			.map(started -> {
 			if (started) {
-				return ResponseEntity.ok("방송이 시작됩니다. : " + streamerId);
+				return ResponseEntity.ok("방송이 시작됩니다. : " + userDetails.getLoginId());
 			} else {
-				return ResponseEntity.badRequest().body("방송 시작을 실패하였습니다. : " + streamerId);
+				return ResponseEntity.badRequest().body("방송 시작을 실패하였습니다. : " + userDetails.getLoginId());
 			}
 		});
 	}
 
-	   @PostMapping("/{streamName}/streaming")
-	   public ResponseEntity<String> stopStream(@RequestParam String streamName, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-	       boolean stopped = streamService.stopStream(streamName, userDetails.getMember() );
-	       if (stopped) {
-	           return ResponseEntity.ok("스트리밍이 종료 되었습니다. : " + streamName);
-	       } else {
-	           return ResponseEntity.badRequest().body("스트리밍 종료가 실패하였습니다. : " + streamName);
-	       }
+	   @PostMapping("/offair")
+	   public Mono<ResponseEntity<String>> stopStream(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+	       return streamService.stopStream(userDetails.getMember())
+			   .map(stopped ->{
+				   if (stopped) {
+					   return ResponseEntity.ok("스트리밍이 종료 되었습니다. : " + userDetails.getLoginId());
+				   } else {
+					   return ResponseEntity.badRequest().body("스트리밍 종료가 실패하였습니다. : " + userDetails.getLoginId());
+				   }
+			   });
 	   }
 
 }
