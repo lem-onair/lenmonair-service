@@ -2,6 +2,7 @@ package com.hanghae.lemonairservice.jwt;
 
 import java.security.Key;
 import java.util.Base64;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -33,28 +34,19 @@ public class JwtUtil {
 		byte[] bytes = Base64.getDecoder().decode(secretKey);
 		key = Keys.hmacShaKeyFor(bytes);
 	}
-	//
-	// // 토큰 생성
-	// public String createToken(String loginId) {
-	//     Date date = new Date();
-	//
-	//     long TOKEN_TIME = 360 * 60 * 1000L;
-	//     return BEARER_PREFIX +
-	//         Jwts.builder()
-	//             .setSubject(loginId)
-	//             .setExpiration(new Date(date.getTime() + TOKEN_TIME))
-	//             .setIssuedAt(date)
-	//             .signWith(key, signatureAlgorithm)
-	//             .compact();
-	// }
-	//
-	// public Claims getMemberInfoFromToken(String token) {
-	//     return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-	// }
-	//
-	// public String getTokenFromRequest(ServerHttpRequest req) {
-	//     return req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-	// }
+
+	// 토큰 생성
+	public String createToken(String loginId) {
+		Date date = new Date();
+
+		long TOKEN_TIME = 360 * 60 * 1000L;
+		return BEARER_PREFIX + Jwts.builder()
+			.setSubject(loginId)
+			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+			.setIssuedAt(date)
+			.signWith(key, signatureAlgorithm)
+			.compact();
+	}
 
 	public String substringToken(String tokenValue) {
 		if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {

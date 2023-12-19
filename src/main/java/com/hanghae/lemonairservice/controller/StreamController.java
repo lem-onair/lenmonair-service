@@ -37,10 +37,7 @@ public class StreamController {
         }
     }
 
-    @PostMapping("/{streamerId}/streaming")
-    public Mono<Boolean> startStreamRequestFromRtmpServer(@PathVariable String streamerId){
-        return streamService.startStreamRequestFromRtmpServer(streamerId);
-    }
+
 
 //    @PostMapping("/{streamName}/streaming")
 //    public ResponseEntity<String> stopStream(@RequestParam String streamName, @AuthenticationPrincipal UserDetailsImpl userDetails) {
