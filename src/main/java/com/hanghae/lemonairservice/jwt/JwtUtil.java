@@ -21,6 +21,13 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
+import java.security.Key;
+import java.util.Base64;
+import java.util.Date;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -64,7 +71,8 @@ public class JwtUtil {
         return Mono.just(token);
     }
 
-    public Mono<String> createRefreshToken(String loginId) {
+   
+   public Mono<String> createRefreshToken(String loginId) {
         Date date = new Date();
 
         long TOKEN_TIME = 360 * 60 * 1000L;

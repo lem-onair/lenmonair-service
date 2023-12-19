@@ -15,8 +15,8 @@ import com.hanghae.lemonairservice.security.SecurityContextRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-@Configuration
 @EnableWebFluxSecurity
+@Configuration
 @RequiredArgsConstructor
 public class WebfluxSecurityConfiguration {
 
@@ -32,9 +32,9 @@ public class WebfluxSecurityConfiguration {
 			.authorizeExchange((exchanges) -> exchanges.pathMatchers("/**").permitAll().anyExchange().authenticated())
 
 			// .authorizeExchange((exchanges) -> exchanges.pathMatchers("/api/signup", "/api/login", "/api/rtmp/**")
-				.permitAll()
-				.anyExchange()
-				.authenticated())
+// 				.permitAll()
+// 				.anyExchange()
+// 				.authenticated())
 
 			.securityContextRepository(securityContextRepository)
 			.authenticationManager(authenticationManager)

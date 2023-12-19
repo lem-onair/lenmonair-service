@@ -3,6 +3,7 @@ package com.hanghae.lemonairservice.service;
 
 import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
+import com.hanghae.lemonairservice.dto.member.TokenResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberRepository;
@@ -94,6 +95,7 @@ public class MemberService {
         return pattern.matcher(password).matches();
     }
 
+
     public Mono<ResponseEntity<String>> login(LoginRequestDto loginRequestDto) {
         return memberRepository.findByLoginId(loginRequestDto.getLoginId())
             .flatMap(member -> {
@@ -108,10 +110,10 @@ public class MemberService {
                                 ));
 
                 } else {
-                    return Mono.just(ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다."));
+                    return Mono.just(ResponseEntity.badRequest().body("아이디 또는 비밀번호가 잘못되었습니다."));
                 }
             })
-            .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("이메일 또는 비밀번호가 잘못되었습니다.")));
+            .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("아이디 또는 비밀번호가 잘못되었습니다.")));
     }
 
     public Mono<ResponseEntity<String>> logout(String loginId){

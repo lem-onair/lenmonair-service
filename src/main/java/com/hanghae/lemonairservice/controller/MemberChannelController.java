@@ -26,7 +26,6 @@ public class MemberChannelController {
 
 	@GetMapping("/channels")
 	public Mono<ResponseEntity<List<MemberChannelResponseDto>>> getChannelsByOnAirTrue() {
-
 		return memberChannelService.getChannelsByOnAirTrue();
 	}
 
