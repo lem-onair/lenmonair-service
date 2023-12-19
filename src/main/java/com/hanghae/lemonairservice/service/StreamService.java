@@ -21,9 +21,7 @@ public class StreamService {
 		log.info(streamKey.getStreamKey());
 		return memberRepository.findByLoginId(streamerId)
 			.filter(member -> member.getStreamKey().equals(streamKey.getStreamKey()))
-			.switchIfEmpty(
-				// TODO: 2023-12-19 obsstudio에 입력한 streamKey가 일치하지 않을 때 client가 알도록 하기
-				Mono.error(new RuntimeException("스트림 키가 일치하지 않습니다.")))
+			.switchIfEmpty(Mono.error(new RuntimeException("스트림 키가 일치하지 않습니다.")))
 			.thenReturn(true);
 	}
 

@@ -31,8 +31,6 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 	@Override
 	public Mono<Authentication> authenticate(Authentication authentication) {
 		String authToken = authentication.getCredentials().toString();
-		// TODO: 2023-12-19 아래 메서드에서 예외가 발생하므로 아래 refreshTokenRepository.findByLoginId(loginId) 로직은 타지만,
-		//  loginId를 jwt토큰에서 꺼내오지 못했으므로 loginId =""인 상황 
 		String loginId = jwtUtil.getUserLoginIdFromToken(authToken);
 
 		return jwtUtil.validateToken(authToken).flatMap(valid -> {
@@ -42,8 +40,6 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 					return new UsernamePasswordAuthenticationToken(user, null, emptyAuthorities);
 				});
 			} else {
-				// TODO: 2023-12-19 현재는 refreshToken을 client에게 받아서 서버에 저장된 refreshToken과 같은지(변조되지않았는지) 검증하는 로직 없이
-				//  아직 서버에 있는 refreshToken이 유효하다면 accessToken 재발급
 				return refreshTokenRepository.findByLoginId(loginId)
 					.flatMap(
 						refreshToken -> generateNewAccessToken(refreshToken) // Refresh Token을 이용하여 새로운 Access Token 생성
@@ -70,7 +66,6 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 
 		return refreshTokenService.refresh(new RefreshRequestDto(refreshToken))
 			.map(RefreshResponseDto::getRefreshToken);
-
 
 		// return request.retrieve().bodyToMono(String.class); // 발급받은 새로운 Access Token을 Mono로 반환
 	}

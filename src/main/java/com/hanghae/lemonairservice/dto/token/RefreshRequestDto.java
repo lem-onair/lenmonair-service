@@ -1,6 +1,5 @@
 package com.hanghae.lemonairservice.dto.token;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

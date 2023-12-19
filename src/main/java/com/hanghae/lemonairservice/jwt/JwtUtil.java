@@ -49,15 +49,14 @@ public class JwtUtil {
 		Date date = new Date();
 
 		// long TOKEN_TIME = 900 * 1000L;
-		long TOKEN_TIME = 20 *1000L;
+		long TOKEN_TIME = 20 * 1000L;
 
-		String token = BEARER_PREFIX +
-			Jwts.builder()
-				.setSubject(loginId)
-				.setExpiration(new Date(date.getTime() + TOKEN_TIME))
-				.setIssuedAt(date)
-				.signWith(key, signatureAlgorithm)
-				.compact();
+		String token = BEARER_PREFIX + Jwts.builder()
+			.setSubject(loginId)
+			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+			.setIssuedAt(date)
+			.signWith(key, signatureAlgorithm)
+			.compact();
 
 		return Mono.just(token);
 	}
@@ -66,14 +65,13 @@ public class JwtUtil {
 		Date date = new Date();
 
 		long TOKEN_TIME = 360 * 60 * 1000L;
-		String token = BEARER_PREFIX +
-			Jwts.builder()
-				.claim("type", "refreshToken")
-				.claim("sub", loginId)
-				.setExpiration(new Date(date.getTime() + TOKEN_TIME))
-				.setIssuedAt(date)
-				.signWith(key, signatureAlgorithm)
-				.compact();
+		String token = BEARER_PREFIX + Jwts.builder()
+			.claim("type", "refreshToken")
+			.claim("sub", loginId)
+			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+			.setIssuedAt(date)
+			.signWith(key, signatureAlgorithm)
+			.compact();
 
 		return Mono.just(token);
 	}
@@ -105,8 +103,7 @@ public class JwtUtil {
 	public Mono<Boolean> validateRefreshToken(String token) {
 		try {
 			token = token.substring("Bearer ".length());
-			return Mono.just(Jwts.parserBuilder().setSigningKey(key).build()
-					.parseClaimsJws(token).getBody())
+			return Mono.just(Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody())
 				.flatMap(tokenBody -> {
 					if (tokenBody.get("type", String.class).equals("refreshToken")) {
 						return Mono.just(true);
@@ -120,12 +117,12 @@ public class JwtUtil {
 	}
 
 	public String getUserLoginIdFromToken(String token) {
-		try{
-			if(token.startsWith("Bearer ")){
+		try {
+			if (token.startsWith("Bearer ")) {
 				token = token.substring("Bearer ".length());
 			}
 			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
-		} catch (ExpiredJwtException e){
+		} catch (ExpiredJwtException e) {
 			log.info("만료된 jwt 토큰일 경우에만 따로 처리하기");
 
 			return extractLoginIdFromExpiredJwtToken(token).get("sub").asText();
@@ -134,7 +131,7 @@ public class JwtUtil {
 
 	private JsonNode extractLoginIdFromExpiredJwtToken(String jwt) {
 
-		jwt = jwt.substring(jwt.indexOf('.')+1, jwt.lastIndexOf('.'));
+		jwt = jwt.substring(jwt.indexOf('.') + 1, jwt.lastIndexOf('.'));
 		log.info(jwt);
 		Base64.Decoder decoder = Base64.getUrlDecoder();
 		String claimsString = new String(decoder.decode(jwt));

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 public class RefreshResponseDto {
 	private String refreshToken;
 
-	public RefreshResponseDto(String refreshToken){
+	public RefreshResponseDto(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
 
