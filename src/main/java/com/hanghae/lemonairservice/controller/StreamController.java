@@ -22,8 +22,8 @@ public class StreamController {
 
     @PostMapping("/{streamerId}/check")
     public ResponseEntity<Boolean> checkStreamValidity(@PathVariable String streamerId, @RequestBody StreamKeyRequestDto streamKey) {
-        boolean isValid = streamService.checkStreamValidity(streamerId, streamKey);
-        return ResponseEntity.ok(isValid);
+        // return streamService.checkStreamValidity(streamerId, streamKey);
+        return ResponseEntity.ok(false);
     }
 
     @PostMapping("/{streamerId}/onair")
