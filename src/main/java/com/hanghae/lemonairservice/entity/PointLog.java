@@ -9,10 +9,10 @@ import org.springframework.data.relational.core.mapping.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-@Table("donation")
+@Table("point_log")
 @Getter
 @Setter
-public class Donation {
+public class PointLog {
 	@Id
 	private Long id;
 	private Long streamerId;

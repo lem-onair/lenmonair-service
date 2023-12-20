@@ -26,7 +26,7 @@ CREATE TABLE point
     nickname            VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE donation
+CREATE TABLE point_log
 (
     id                  SERIAL PRIMARY KEY,
     streamer_id         BIGINT NOT NULL UNIQUE,

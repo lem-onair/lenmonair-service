@@ -23,7 +23,7 @@ public class Point {
 	private Member member;
 
 	@Transient
-	private List<Donation> orders;
+	private List<PointLog> orders;
 
 	public Point(Member member){
 		this.memberId = member.getId();
