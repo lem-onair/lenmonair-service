@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.hanghae.lemonairservice.dto.point.AddPointRequestDto;
+import com.hanghae.lemonairservice.dto.point.DonationRankingDto;
 import com.hanghae.lemonairservice.dto.point.DonationRequestDto;
 import com.hanghae.lemonairservice.dto.point.DonationResponseDto;
 import com.hanghae.lemonairservice.dto.point.PointResponseDto;
@@ -21,6 +22,7 @@ import com.hanghae.lemonairservice.repository.PointRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -72,4 +74,18 @@ public class PointService {
 			});
 	}
 
+	public Mono<ResponseEntity<Flux<DonationRankingDto>>> donationRank(Member member) {
+		Flux<DonationRankingDto> donationRankDto = pointLogRepository.findByStreamerId(member.getId())
+			.concatMap(userId -> pointRepository.findById(userId).flux())
+			.map(point -> new DonationRankingDto(point.getNickname()));
+
+		return Mono.just(ResponseEntity.ok(donationRankDto));
+		// return pointLogRepository.findByStreamerId(member.getId())
+		// 	.concatMap(userId -> pointRepository.findById(userId).flux())
+		// 	.map(point ->Mono.just(ResponseEntity.ok(new DonationRankingDto(point.getNickname())));
+			 // 각 Point를 DonationRankingDto로 변
+		// Flux<DonationRankingDto> donationRankDto = pointLogRepository.findByStreamerId(member.getId())
+		// 	.map(DonationRankingDto::new);
+		// return Mono.just(ResponseEntity.ok(donationRankDto));
+	}
 }
