@@ -1,6 +1,6 @@
 CREATE TABLE member
 (
-    id         SERIAL PRIMARY KEY,
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,
     email      VARCHAR(255) NOT NULL UNIQUE,
     password   VARCHAR(255) NOT NULL,
     login_id     VARCHAR(255) NOT NULL UNIQUE,
@@ -10,9 +10,9 @@ CREATE TABLE member
 
 CREATE TABLE member_channel
 (
-    id                  SERIAL PRIMARY KEY,
+    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
     title               VARCHAR(255) NOT NULL UNIQUE,
-    member_id           VARCHAR(255) NOT NULL UNIQUE,
+    member_id           BIGINT NOT NULL UNIQUE,
     streamer_nickname   VARCHAR(255) NOT NULL,
     on_air              BOOLEAN NOT NULL
 );
