@@ -52,10 +52,10 @@ public class StreamService {
 				.switchIfEmpty(Mono.error(new RuntimeException("해당 멤버의 채널이 존재하지 않습니다.")))
 				.flatMap(memberChannel -> {
 					memberChannel.setOnAir(false);
-					endedAt = LocalDateTime.now();
-					Duration duration = Duration.between(startedAt, endedAt); // 시간 차이 계산
-					long minutesDifference = duration.toMinutes(); // 시간 차이를 분으로 변환
-					memberChannel.addTime((int)minutesDifference);
+					// endedAt = LocalDateTime.now();
+					// Duration duration = Duration.between(startedAt, endedAt); // 시간 차이 계산
+					// long minutesDifference = duration.toMinutes(); // 시간 차이를 분으로 변환
+					// memberChannel.addTime((int)minutesDifference);
 					return memberChannelRepository.save(memberChannel).thenReturn(true);
 				}));
 	}

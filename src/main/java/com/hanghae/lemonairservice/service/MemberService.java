@@ -94,8 +94,8 @@ public class MemberService {
 
                     return memberRepository.save(newMember)
                         .flatMap(memberChannelService::createChannel)
-                        .flatMap(savedMember -> pointService.createPoint(savedMember.getMember()) // 여기에서 pointService::createPoint 호출
-                            .thenReturn(savedMember)) //
+                        // .flatMap(savedMember -> pointService.createPoint(savedMember.getMember()) // 여기에서 pointService::createPoint 호출
+                        //     .thenReturn(savedMember)) //
                         .map(savedMember -> ResponseEntity.ok().body(new SignUpResponseDto(streamKey)))
                         .onErrorResume(throwable -> Mono.error(new ResponseStatusException(
                             HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다."

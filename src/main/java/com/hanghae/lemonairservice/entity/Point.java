@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import lombok.Getter;
@@ -15,8 +16,11 @@ import lombok.Setter;
 public class Point {
 	@Id
 	private Long id;
+	@Column("member_id")
 	private Long memberId;
+	@Column("nickname")
 	private String nickname;
+	@Column("point")
 	private int point;
 
 	@Transient
