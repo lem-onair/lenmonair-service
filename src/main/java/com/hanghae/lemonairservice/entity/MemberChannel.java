@@ -23,6 +23,9 @@ public class MemberChannel {
 	private Boolean onAir;
 	private LocalDateTime startedAt;
 
+	@Column("total_streaming")
+	private int totalStreaming;
+
 	@Column("member_id")
 	private Long memberId;
 
@@ -33,7 +36,14 @@ public class MemberChannel {
 		this.title = member.getNickname() + "의 방송";
 		this.streamerNickname = member.getNickname();
 		this.onAir = false;
+		this.totalStreaming = 0;
 		this.memberId = member.getId();
 	}
+
+	public MemberChannel addTime(int time){
+		this.totalStreaming += time;
+		return this;
+	}
+
 
 }

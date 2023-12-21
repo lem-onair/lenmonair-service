@@ -14,6 +14,7 @@ CREATE TABLE member_channel
     title               VARCHAR(255) NOT NULL UNIQUE,
     member_id           VARCHAR(255) NOT NULL UNIQUE,
     streamer_nickname   VARCHAR(255) NOT NULL,
+    total_streaming     INTEGER NOT NULL,
     on_air              BOOLEAN NOT NULL
 );
 
