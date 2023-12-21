@@ -33,7 +33,7 @@ CREATE TABLE point_log
     streamer_id         BIGINT NOT NULL,
     donater_id          BIGINT NOT NULL,
     contents            VARCHAR(255) NOT NULL,
-    donated_at          TIMESTAMP NOT NULL,
+    donated_at          VARCHAR(255) NOT NULL,
     donate_point        INTEGER NOT NULL
 );
 

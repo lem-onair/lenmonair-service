@@ -7,6 +7,9 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.hanghae.lemonairservice.dto.point.DonationRequestDto;
+import com.hanghae.lemonairservice.dto.point.DonationResponseDto;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,11 +25,18 @@ public class PointLog {
 	private Long donaterId;
 	private String contents;
 	@Column("donated_at")
-	private LocalDateTime donated_At;
+	private String donated_At;
 	@Column("donate_point")
 	private int donatePoint;
 
 	@Transient
 	private Point point;
 
+	public PointLog(Member member, DonationRequestDto donationRequestDto,String now, Long streamerId) {
+		this.streamerId = streamerId;
+		this.donaterId = member.getId();
+		this.contents = donationRequestDto.getContents();
+		this.donated_At = now;
+		this.donatePoint = donationRequestDto.getDonatePoint();
+	}
 }
