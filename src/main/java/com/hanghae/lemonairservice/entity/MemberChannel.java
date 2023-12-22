@@ -1,6 +1,6 @@
 package com.hanghae.lemonairservice.entity;
+import java.time.LocalDateTime;
 
-import org.joda.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;

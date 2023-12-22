@@ -25,14 +25,14 @@ public class PointLog {
 	private Long donaterId;
 	private String contents;
 	@Column("donated_at")
-	private String donated_At;
+	private LocalDateTime donated_At;
 	@Column("donate_point")
 	private int donatePoint;
 
 	@Transient
 	private Point point;
 
-	public PointLog(Member member, DonationRequestDto donationRequestDto,String now, Long streamerId) {
+	public PointLog(Member member, DonationRequestDto donationRequestDto,LocalDateTime now, Long streamerId) {
 		this.streamerId = streamerId;
 		this.donaterId = member.getId();
 		this.contents = donationRequestDto.getContents();

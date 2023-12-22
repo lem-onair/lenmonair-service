@@ -27,8 +27,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
+@Transactional
 public class PointService {
 	private final PointRepository pointRepository;
 	private final PointLogRepository pointLogRepository;
@@ -60,17 +60,15 @@ public class PointService {
 					.flatMap(savedstreamerPoint -> {
 						Point streamerPoint = savedstreamerPoint.addPoint(donationRequestDto.getDonatePoint());
 						return pointRepository.save(streamerPoint)
-							.flatMap(updatepoint -> pointLogRepository.save(new PointLog(member,donationRequestDto,LocalDateTime.now().toString(),streamerId)));
-					}).flatMap(updatepoint -> {
-						return Mono.just(ResponseEntity.ok(new DonationResponseDto(
-							member.getId(),
-							member.getNickname(),
-							streamerId,
-							donationRequestDto.getContents(),
-							donater.getPoint(),
-							LocalDateTime.now().toString()
-						)));
-					});
+							.flatMap(updatepoint -> pointLogRepository.save(new PointLog(member,donationRequestDto,LocalDateTime.now(),streamerId)));
+					}).flatMap(updatepoint -> Mono.just(ResponseEntity.ok(new DonationResponseDto(
+						member.getId(),
+						member.getNickname(),
+						streamerId,
+						donationRequestDto.getContents(),
+						donater.getPoint(),
+						LocalDateTime.now().toString()
+					))));
 			});
 	}
 
@@ -80,12 +78,5 @@ public class PointService {
 			.map(point -> new DonationRankingDto(point.getNickname()));
 
 		return Mono.just(ResponseEntity.ok(donationRankDto));
-		// return pointLogRepository.findByStreamerId(member.getId())
-		// 	.concatMap(userId -> pointRepository.findById(userId).flux())
-		// 	.map(point ->Mono.just(ResponseEntity.ok(new DonationRankingDto(point.getNickname())));
-			 // 각 Point를 DonationRankingDto로 변
-		// Flux<DonationRankingDto> donationRankDto = pointLogRepository.findByStreamerId(member.getId())
-		// 	.map(DonationRankingDto::new);
-		// return Mono.just(ResponseEntity.ok(donationRankDto));
 	}
 }
