@@ -1,5 +1,6 @@
 package com.hanghae.lemonairservice.entity;
-import java.time.LocalDateTime;
+
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -11,43 +12,38 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Table("point")
 @Getter
 @Setter
-@Table("member_channel")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberChannel {
+public class Point {
 	@Id
 	private Long id;
-	private String title;
-	private String streamerNickname;
-	private Boolean onAir;
-	private LocalDateTime startedAt;
-
-	@Column("total_streaming")
-	private int totalStreaming;
-
 	@Column("member_id")
 	private Long memberId;
+	private String nickname;
+	private int point;
 
 	@Transient
 	private Member member;
 
-	public MemberChannel(Member member) {
-		this.title = member.getNickname() + "의 방송";
-		this.streamerNickname = member.getNickname();
-		this.onAir = false;
-		this.totalStreaming = 0;
+	// @Transient
+	// private List<PointLog> pointlogs;
+
+	public Point(Member member){
 		this.memberId = member.getId();
+		this.nickname = member.getNickname();
+		this.point = 0;
 	}
 
-	public MemberChannel addTime(int time){
-		this.totalStreaming += time;
+	public Point addPoint(int point) {
+		this.point += point;
 		return this;
 	}
 
-	public void setStartedAt(LocalDateTime startedAt) {
-		this.startedAt = startedAt;
+	public Point usePoint(int point) {
+		this.point -= point;
+		return this;
 	}
-
 
 }

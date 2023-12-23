@@ -1,6 +1,6 @@
 spring:
   r2dbc:
-    url: r2dbc:mysql://localhost:3306/webflux?serverTimezone=UTC+9
+    url: r2dbc:mysql://localhost:3306/webflux?serverTimezone=Asia/Seoul
     username: root
     password: Rkdalsqja1!
 

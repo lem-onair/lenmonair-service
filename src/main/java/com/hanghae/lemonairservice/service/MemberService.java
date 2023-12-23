@@ -1,5 +1,6 @@
 package com.hanghae.lemonairservice.service;
 
+import java.nio.channels.Channel;
 import java.util.regex.Pattern;
 
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,12 @@ import com.hanghae.lemonairservice.dto.member.LoginResponseDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
+import com.hanghae.lemonairservice.entity.MemberChannel;
+import com.hanghae.lemonairservice.entity.Point;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
+import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
+import com.hanghae.lemonairservice.repository.PointRepository;
 import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
 
 import java.security.Principal;
@@ -34,9 +39,12 @@ public class MemberService {
   
    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MemberChannelRepository memberChannelRepository;
     private final MemberChannelService memberChannelService;
+    private final PointService pointService;
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PointRepository pointRepository;
 
     private static final String PASSWORD_PATTERN =
         "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
@@ -83,20 +91,24 @@ public class MemberService {
                     ));
                 } else {
                     String streamKey = UUID.randomUUID().toString();
-                    Member newMember = new Member(
-                        signupRequestDto.getEmail(),
-                        passwordEncoder.encode(signupRequestDto.getPassword()),
-                        signupRequestDto.getLoginId(),
-                        signupRequestDto.getNickname(),
-                        streamKey
-                    );
-
-                    return memberRepository.save(newMember)
-                        .flatMap(memberChannelService::createChannel)
-                        .map(savedMember -> ResponseEntity.ok().body(new SignUpResponseDto(streamKey)))
+                    Mono<Member> monomember = memberRepository.save(new Member(signupRequestDto.getEmail(),
+                            passwordEncoder.encode(signupRequestDto.getPassword()), signupRequestDto.getLoginId(),
+                            signupRequestDto.getNickname(), streamKey))
                         .onErrorResume(throwable -> Mono.error(new ResponseStatusException(
-                            HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다."
-                        )));
+                            HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")));
+                    return monomember
+                        .flatMap(membermono -> {
+                            Mono<MemberChannel> monochannel = memberChannelRepository.save(
+                                    new MemberChannel(membermono))
+                                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(
+                                    HttpStatus.INTERNAL_SERVER_ERROR, "채널 생성에 실패했습니다.")));
+
+                            Mono<Point> monopoint = pointRepository.save(new Point(membermono))
+                                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(
+                                    HttpStatus.INTERNAL_SERVER_ERROR, "포인트 생성에 실패했습니다.")));
+
+                            return Mono.zip(monochannel, monopoint).thenReturn(membermono);
+                        }).thenReturn(ResponseEntity.ok(new SignUpResponseDto(streamKey)));
                 }
             });
     }

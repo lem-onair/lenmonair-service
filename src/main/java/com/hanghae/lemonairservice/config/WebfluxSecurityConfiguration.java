@@ -30,12 +30,14 @@ public class WebfluxSecurityConfiguration {
 			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 
 
-//			 .authorizeExchange((exchanges) -> exchanges.pathMatchers("/**").permitAll().anyExchange().authenticated())
 
-			.authorizeExchange((exchanges) -> exchanges.pathMatchers("/health", "/api/signup", "/api/login", "/api/rtmp/**")
-				.permitAll()
-				.anyExchange()
-				.authenticated())
+			.authorizeExchange((exchanges) -> exchanges.pathMatchers("/**").permitAll().anyExchange().authenticated())
+
+			// .authorizeExchange((exchanges) -> exchanges.pathMatchers("/api/signup", "/api/login", "/api/rtmp/**")
+			// 	.permitAll()
+			// 	.anyExchange()
+			// 	.authenticated())
+
 
 			.securityContextRepository(securityContextRepository)
 			.authenticationManager(authenticationManager)

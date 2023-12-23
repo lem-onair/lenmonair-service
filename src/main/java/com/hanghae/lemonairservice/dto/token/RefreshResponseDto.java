@@ -11,5 +11,4 @@ public class RefreshResponseDto {
 	public RefreshResponseDto(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
-
 }
