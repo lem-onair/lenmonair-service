@@ -13,5 +13,5 @@ import reactor.core.publisher.Flux;
 
 public interface PointLogRepository extends ReactiveCrudRepository<PointLog,Long> {
 	@Query("SELECT donater_id FROM point_log WHERE streamer_id = :streamerId GROUP BY donater_id ORDER BY SUM(donate_point) DESC LIMIT 10")
-	Flux<Long> findByStreamerId(@Param("streamerId") Long streamerId);
+	Flux<Long> findByStreamerIdOrderBySumOfDonateLimit10(@Param("streamerId") Long streamerId);
 }

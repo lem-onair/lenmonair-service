@@ -45,5 +45,9 @@ public class MemberChannel {
 		return this;
 	}
 
+	public void setStartedAt(LocalDateTime startedAt) {
+		this.startedAt = startedAt;
+	}
+
 
 }

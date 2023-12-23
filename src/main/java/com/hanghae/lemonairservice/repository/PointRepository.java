@@ -14,6 +14,4 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface PointRepository extends ReactiveCrudRepository<Point, Long> {
-	@Query("SELECT p.nickname FROM Point p WHERE p.donaterId = :donaterId")
-	Flux<String> findNicknameByDonaterId(@Param("donaterId") Long donaterId);
 }

@@ -50,9 +50,13 @@ public class StreamService {
 				.flatMap(memberChannel -> {
 					memberChannel.setOnAir(false);
 					startedAt = memberChannel.getStartedAt();
+					if(startedAt== null){
+						return Mono.error(new RuntimeException("시작되지 않은 방송입니다."));
+					}
 					endedAt = LocalDateTime.now();
 					Duration duration = Duration.between(startedAt, endedAt); // 시간 차이 계산
 					long minutesDifference = duration.toMinutes(); // 시간 차이를 분으로 변환
+					memberChannel.setStartedAt(null);
 					memberChannel.addTime((int)minutesDifference);
 					return memberChannelRepository.save(memberChannel).thenReturn(true);
 				}));

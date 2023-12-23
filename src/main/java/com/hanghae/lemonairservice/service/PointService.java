@@ -28,7 +28,6 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
 public class PointService {
 	private final PointRepository pointRepository;
 	private final PointLogRepository pointLogRepository;
@@ -42,6 +41,7 @@ public class PointService {
 				.map(savedPoint -> ResponseEntity.ok().body(new PointResponseDto(member, point.getPoint()))));
 	}
 
+	@Transactional
 	public Mono<ResponseEntity<DonationResponseDto>> usePoint(DonationRequestDto donationRequestDto, Member member, Long streamerId) {
 		return pointRepository.findById(member.getId())
 			.flatMap(donater -> {
@@ -54,26 +54,27 @@ public class PointService {
 				if (donater.getPoint() - donationRequestDto.getDonatePoint() < 0) {
 					return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
 				}
-				System.out.println(donater.getPoint());
 				return pointRepository.save(donater.usePoint(donationRequestDto.getDonatePoint()))
 					.flatMap(savedPoint -> pointRepository.findById(streamerId))
+					.log()
 					.flatMap(savedstreamerPoint -> {
 						Point streamerPoint = savedstreamerPoint.addPoint(donationRequestDto.getDonatePoint());
 						return pointRepository.save(streamerPoint)
 							.flatMap(updatepoint -> pointLogRepository.save(new PointLog(member,donationRequestDto,LocalDateTime.now(),streamerId)));
-					}).flatMap(updatepoint -> Mono.just(ResponseEntity.ok(new DonationResponseDto(
+					}).log()
+					.flatMap(updatepoint -> Mono.just(ResponseEntity.ok(new DonationResponseDto(
 						member.getId(),
 						member.getNickname(),
 						streamerId,
 						donationRequestDto.getContents(),
 						donater.getPoint(),
 						LocalDateTime.now().toString()
-					))));
+					)))).log();
 			});
 	}
 
 	public Mono<ResponseEntity<Flux<DonationRankingDto>>> donationRank(Member member) {
-		Flux<DonationRankingDto> donationRankDto = pointLogRepository.findByStreamerId(member.getId())
+		Flux<DonationRankingDto> donationRankDto = pointLogRepository.findByStreamerIdOrderBySumOfDonateLimit10(member.getId())
 			.concatMap(userId -> pointRepository.findById(userId).flux())
 			.map(point -> new DonationRankingDto(point.getNickname()));
 
