@@ -33,7 +33,6 @@ public class PointService {
 	private final PointLogRepository pointLogRepository;
 
 	public Mono<ResponseEntity<PointResponseDto>> addpoint(AddPointRequestDto addPointRequestDto, Member member) {
-		System.out.println("기능이 작동하는지 test");
 		return pointRepository.findByMemberId(member.getId()).log()
 			.switchIfEmpty(Mono.error(new ResponseStatusException(
 				HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다.")))
