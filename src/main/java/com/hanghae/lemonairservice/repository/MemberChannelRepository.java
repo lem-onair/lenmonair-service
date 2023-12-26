@@ -11,4 +11,5 @@ public interface MemberChannelRepository extends ReactiveCrudRepository<MemberCh
 	Flux<MemberChannel> findAllByOnAirIsTrue();
 
 	Mono<MemberChannel> findByMemberId(Long memberId);
+
 }

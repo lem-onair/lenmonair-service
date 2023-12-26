@@ -29,6 +29,8 @@ public class MemberChannel {
 	@Column("member_id")
 	private Long memberId;
 
+	private int followers;
+
 	@Transient
 	private Member member;
 
@@ -38,6 +40,12 @@ public class MemberChannel {
 		this.onAir = false;
 		this.totalStreaming = 0;
 		this.memberId = member.getId();
+		this.followers = 0;
+	}
+
+	public MemberChannel addFollower(){
+		this.followers += 1;
+		return this;
 	}
 
 	public MemberChannel addTime(int time){

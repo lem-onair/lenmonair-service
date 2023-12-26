@@ -20,11 +20,12 @@ public class Follow {
 	private Long memberId;
 
 	@Transient
-	private Member member;
+	private MemberChannel memberChannel;
 
 	public Follow(Long streamerId, Long memberId){
 		this.streamerId = streamerId;
 		this.memberId = memberId;
 	}
+
 
 }
