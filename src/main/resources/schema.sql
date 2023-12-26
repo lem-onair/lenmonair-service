@@ -38,6 +38,13 @@ CREATE TABLE point_log
     donate_point        INTEGER NOT NULL
 );
 
+CREATE TABLE follow
+(
+    id                  SERIAL PRIMARY KEY,
+    streamer_id         BIGINT NOT NULL,
+    member_id           BIGINT NOT NULL
+);
+
 
 ALTER TABLE member_channel
     ADD started_at DATETIME;
