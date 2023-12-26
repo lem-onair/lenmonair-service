@@ -24,7 +24,7 @@ CREATE TABLE point
 (
     id                  SERIAL PRIMARY KEY,
     member_id           BIGINT NOT NULL UNIQUE,
-    point               INTEGER NOT NULL,
+    point               INTEGER,
     nickname            VARCHAR(255) NOT NULL
 );
 

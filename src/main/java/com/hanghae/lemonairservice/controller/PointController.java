@@ -20,12 +20,14 @@ import com.hanghae.lemonairservice.security.PrincipalUtil;
 import com.hanghae.lemonairservice.service.PointService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Slf4j
 public class PointController {
 	private final PointService pointService;
 

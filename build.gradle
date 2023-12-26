@@ -26,7 +26,7 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 
-	implementation 'com.github.iamport:iamport-rest-client-java:0.2.23'
+	implementation 'com.github.iamport:iamport-rest-client-java:0.2.21'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 	testImplementation 'org.projectlombok:lombok:1.18.28'

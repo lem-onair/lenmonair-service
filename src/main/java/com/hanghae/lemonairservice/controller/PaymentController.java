@@ -7,31 +7,28 @@ import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.PostConstruct;
 
-@Controller
+@RestController
 public class PaymentController {
 	private IamportClient iamportClient;
 
 	@PostConstruct
-	public void IamPortController() {
+	public void PaymentController() {
 		this.iamportClient = new IamportClient("7485758722740306",
-			"i7NtziVw7jwtGoIuDSZH7hJ51oKEgdXY4tMhnBL6DWLKl22afBB5jLoAWDikHpyzcs8G2I4Hb7E96OZw");
+			"18cJeOZQsnD3Zf9DGnnJ8NOMdXwrq3wROUBfFghmacXRO1BGYxijfuLIKQFe9Fa1Vk7ECDqPpLBIgs3z");
 	}
 
-	@ResponseBody
-	@RequestMapping("/verify/{imp_uid}")
-	public IamportResponse<Payment> paymentByImpUid(@PathVariable("imp_uid") String imp_uid) throws
-		IamportResponseException,
-		IOException {
+	@PostMapping("/verifyIamport/{imp_uid}")
+	public IamportResponse<Payment> paymentByImpUid(@PathVariable("imp_uid") String imp_uid)
+		throws IamportResponseException, IOException {
 		return iamportClient.paymentByImpUid(imp_uid);
 	}
-
-
-
 
 
 }

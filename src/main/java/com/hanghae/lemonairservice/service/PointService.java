@@ -33,12 +33,13 @@ public class PointService {
 	private final PointLogRepository pointLogRepository;
 
 	public Mono<ResponseEntity<PointResponseDto>> addpoint(AddPointRequestDto addPointRequestDto, Member member) {
-		return pointRepository.findById(member.getId())
+		System.out.println("기능이 작동하는지 test");
+		return pointRepository.findById(member.getId()).log()
 			.switchIfEmpty(Mono.error(new ResponseStatusException(
 				HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다.")))
-			.flatMap(point -> pointRepository.save(point.addPoint(addPointRequestDto.getPoint()))
+			.flatMap(point -> pointRepository.save(point.addPoint(addPointRequestDto.getPoint())).log()
 				.onErrorResume(exception -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,"point 추가 오류")))
-				.map(savedPoint -> ResponseEntity.ok().body(new PointResponseDto(member, point.getPoint()))));
+				.map(savedPoint -> ResponseEntity.ok().body(new PointResponseDto(member, point.getPoint())))).log();
 	}
 
 	@Transactional
