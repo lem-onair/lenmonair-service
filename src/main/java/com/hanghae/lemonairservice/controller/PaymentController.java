@@ -30,10 +30,9 @@ public class PaymentController {
 		this.iamportClient = new IamportClient(APIKey,APISecret);
 	}
 
-	// imp_uid(거래 고유번호)를 검사하여, 데이터를 보내줍니다.
 	// payments.js에서 33~42번 줄의 코드가
 	// 1건의 결제 정보이고, 이 결제 정보의 고유번호가 imp_uid입니다.
-	// url의 경로를 통해 카카오페이 결제 기능을 제공하는 회사의 서버로 데이터를 전송하고
+	// url의 경로를 통해 카카오페이 결제 api를 제공하는 회사의 서버로 데이터를 전송하고
 	// 검사가 완료되면 카카오 결제 기능 창과 함께 데이터를 담아서 전송해줍니다.
 	@PostMapping("/verifyIamport/{imp_uid}")
 	public IamportResponse<Payment> paymentByImpUid(@PathVariable("imp_uid") String imp_uid)
