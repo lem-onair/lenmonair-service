@@ -33,7 +33,8 @@ public class PointController {
 
 	@PostMapping("/point")
 	public Mono<ResponseEntity<PointResponseDto>> addPoint(@RequestBody AddPointRequestDto addPointRequestDto,
-		@AuthenticationPrincipal Principal user){
+		Principal user){
+		log.info("point :" + addPointRequestDto.getPoint());
 		return pointService.addpoint(addPointRequestDto, PrincipalUtil.getMember(user));
 	}
 
