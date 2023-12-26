@@ -7,6 +7,8 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,11 +17,12 @@ import lombok.Setter;
 @Setter
 @Table("member_channel")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberChannel {
 	@Id
 	private Long id;
 	private String title;
-	private String streamerNickname;
 	private Boolean onAir;
 	private LocalDateTime startedAt;
 
@@ -32,9 +35,11 @@ public class MemberChannel {
 	@Transient
 	private Member member;
 
+	public void setMember(Member member){
+		this.member = member;
+	}
 	public MemberChannel(Member member) {
 		this.title = member.getNickname() + "의 방송";
-		this.streamerNickname = member.getNickname();
 		this.onAir = false;
 		this.totalStreaming = 0;
 		this.memberId = member.getId();

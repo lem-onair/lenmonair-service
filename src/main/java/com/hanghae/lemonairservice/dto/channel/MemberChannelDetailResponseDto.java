@@ -13,9 +13,8 @@ public class MemberChannelDetailResponseDto {
 
 	public MemberChannelDetailResponseDto(MemberChannel memberChannel, String hlsUrl) {
 		this.channelId = memberChannel.getId();
-		this.streamerNickname = memberChannel.getStreamerNickname();
+		this.streamerNickname = memberChannel.getMember().getNickname();
 		this.title = memberChannel.getTitle();
 		this.hlsUrl = hlsUrl;
 	}
-
 }

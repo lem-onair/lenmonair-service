@@ -33,6 +33,7 @@ public class MemberChannelService {
 
 	public Mono<ResponseEntity<List<MemberChannelResponseDto>>> getChannelsByOnAirTrue() {
 		return memberChannelRepository.findAllByOnAirIsTrue()
+			// .switchIfEmpty(Mono.error(new NotFoundException("현재 진행중인 방송이 없습니다.")))
 			.switchIfEmpty(Mono.error(new NotFoundException("현재 진행중인 방송이 없습니다.")))
 			.flatMap(this::convertToMemberChannelResponseDto)
 			.collectList()
