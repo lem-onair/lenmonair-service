@@ -18,9 +18,8 @@ import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
 
-import java.security.Principal;
 import java.util.UUID;
-import java.util.regex.Pattern;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -109,8 +108,8 @@ public class MemberService {
     public Mono<ResponseEntity<LoginResponseDto>> login(LoginRequestDto loginRequestDto) {
         return memberRepository.findByLoginId(loginRequestDto.getLoginId()).flatMap(member -> {
             if (passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
-                return jwtUtil.createToken(member)
-                    .flatMap(accessToken -> jwtUtil.createRefreshToken(member.getLoginId())
+                return jwtUtil.createAccessToken(member.getLoginId(), member.getNickname())
+                    .flatMap(accessToken -> jwtUtil.createRefreshToken(member.getLoginId(), member.getNickname())
                         .flatMap(
                             refreshToken -> refreshTokenRepository.saveRefreshToken(member.getLoginId(), refreshToken)
                                 .thenReturn(
