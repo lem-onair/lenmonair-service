@@ -1,8 +1,4 @@
-spring:
-  r2dbc:
-    url: r2dbc:mysql://localhost:3306/webflux?serverTimezone=Asia/Seoul
-    username: root
-    password: Rkdalsqja1!
+
 
 logging:
   level:
@@ -14,8 +10,5 @@ jwt:
 server:
   port: 8081
 
-  ssl:
-    key-store: classpath:keystore.p12
-    key-store-type: PKCS12
-    key-store-password: lemonair123
+
 
