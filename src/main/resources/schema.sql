@@ -41,3 +41,6 @@ CREATE TABLE point_log
 
 ALTER TABLE member_channel
     ADD started_at DATETIME;
+
+ALTER TABLE member_channel
+    DROP streamer_nickname;

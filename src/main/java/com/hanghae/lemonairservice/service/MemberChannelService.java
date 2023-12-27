@@ -10,6 +10,7 @@ import com.hanghae.lemonairservice.dto.channel.MemberChannelDetailResponseDto;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
+import com.hanghae.lemonairservice.exception.channel.NoOnAirChannelException;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 
@@ -33,11 +34,14 @@ public class MemberChannelService {
 
 	public Mono<ResponseEntity<List<MemberChannelResponseDto>>> getChannelsByOnAirTrue() {
 		return memberChannelRepository.findAllByOnAirIsTrue()
-			.switchIfEmpty(Mono.error(new NotFoundException("현재 진행중인 방송이 없습니다.")))
+			// 2-1. 기존 코드 : 에러 발생 상황 인식에 대해서 에러메세지에 의존하며, Exception handling이 까다롭습니다.
+			// .switchIfEmpty(Mono.error(new NotFoundException("현재 진행중인 방송이 없습니다.")))
+			// 2-2. 개선된 코드 :  개발자가 예외 발생 상황만 보고도 어떤 오류발생상황인지 알도록 Custom Exception Class를 Naming합니다.
+			.switchIfEmpty(Mono.error(new NoOnAirChannelException()))
+			// 3. Custom Exception Class의 구조를 확인하세요
 			.flatMap(this::convertToMemberChannelResponseDto)
 			.collectList()
 			.map(ResponseEntity::ok);
-
 	}
 
 	public Mono<ResponseEntity<MemberChannelDetailResponseDto>> getChannelDetail(Long channelId) {
