@@ -45,7 +45,6 @@ class MemberChannelControllerTest {
 
 		 중요! "내가 Controller를 사용함으로써 실행되는 Service 클래스의 함수에 대하여 미리 응답을 정해줘야한다."
 		 */
-
 		// 6. MemberChannelService 클래스에서 가짜로 받을 응답을 getChannelsByOnAirTrue() 메서드의 리턴 형식을 참고하여 작성,
 		List<MemberChannelResponseDto> memberChannelResponseDtoList = new ArrayList<>();
 		memberChannelResponseDtoList.add(
@@ -92,7 +91,4 @@ class MemberChannelControllerTest {
 		assertThat(responseChannelList.get(1).getStreamerNickname()).isEqualTo("nickname2");
 	}
 
-	@Test
-	void getChannelDetail() {
-	}
 }

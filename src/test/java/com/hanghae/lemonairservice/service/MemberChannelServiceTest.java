@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
+import com.hanghae.lemonairservice.exception.channel.NoOnAirChannelException;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 
@@ -47,7 +48,7 @@ class MemberChannelServiceTest {
 	void getChannelsByOnAirTrueSuccessTest() {
 		// given
 		// 4. MemberChannelService 클래스를 참고하여 수행되는 로직이 어떤 흐름인지 먼저 파악해야합니다.
-		// 저희의 로직은 아래와 같습니다.
+		// 저희 비즈니스 로직의 순서는 다음과 같습니다.
 		/**
 		 * 1. MemberChannelService.getChannelsByOnAirTrue() 함수가 실행된다.
 		 * 2. MemberChannelRepository.findAllByOnAirIsTrue() 함수가 실행된다.
@@ -66,7 +67,7 @@ class MemberChannelServiceTest {
 
 		Flux<MemberChannel> memberChannelFlux = Flux.just(memberChannel1, memberChannel2);
 
-		// 8. 서비스 로직에서 실행될 목객체의 응답값을 지정해줍니다.
+		// 8. 서비스 로직에서 실행될 목객체들의 메서드의 응답값을 지정해줍니다.
 		given(memberChannelRepository.findAllByOnAirIsTrue()).willReturn(memberChannelFlux);
 
 		given(memberRepository.findById(memberChannel1.getMemberId())).willReturn(Mono.just(member1));
@@ -98,7 +99,29 @@ class MemberChannelServiceTest {
 		verify(awsService).getThumbnailCloudFrontUrl(member2.getLoginId());
 	}
 
+	/**
+	 * 실패 테스트
+	 * getChannelsByOnAir 메서드를 실행했을 때 발생 가능한 예외들또한 테스트합니다.
+	 *
+	 * getChannelsByOnAirTrue() 메서드를 실행했을 때 진행중인 방송이 없는 경우의 시나리오를 테스트합니다.
+	 * 예외를 일부러 발생시키는 상황이다보니 필요한 조건들이 있습니다.
+	 * 1. 서비스 로직 상 엣지 케이스에 대해서 적절한 예외를 throw해야한다.
+	 * 2. 1번 조건을 만족하려면 기존 코드에서 어떤 변경사항이 있어야 하는지 확인하려면 MemberChannelService.getChannelsByOnAirTrue() 메서드를 참고하세요
+	 * 3. 예외를 handle하는 exception handler가 필요합니다. GlobalExceptionHandler 클래스를 참고하세요
+	 */
 	@Test
 	void getChannelsByOnAirTrueThrows() {
+		// given
+		// 4. 검증하는 상황은 생방송중인 채널이 없어서 NoOnAirChannelException이 발생하는 상황입니다.
+		// 그러므로 MemberChannelService.getChannelsByOnAirTrue() 메소드 내에서 실행되는 로직은
+		// memberChannelRepository.findAllByOnAirIsTrue() 하나뿐입니다. 비어있는 Flux를 리턴하도록 지정합니다.
+		given(memberChannelRepository.findAllByOnAirIsTrue()).willReturn(Flux.empty());
+
+		// when then
+		// 5. StepVerifier로 검증하지만 expectNext 등의 메서드는 사용이 불가합니다.
+		// Mono or Flux에서 생성하는 도중 Mono.error(new NoOnAirChannelException())라는 publisher로 switch될것이므로
+		// StepVerifier.create로 결국 Mono.error를 생성하는 꼴이 되며, Mono.error가 생성되기를 기대하는 경우 verifyError를 활용합니다.
+		StepVerifier.create(memberChannelService.getChannelsByOnAirTrue())
+			.verifyError(NoOnAirChannelException.class);
 	}
 }

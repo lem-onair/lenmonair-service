@@ -48,8 +48,8 @@ public class JwtUtil {
 	public Mono<String> createAccessToken(String loginId, String nickname) {
 		Date date = new Date();
 
-		// long TOKEN_TIME = 900 * 1000L;
-		long TOKEN_TIME = 20 * 1000L;
+		long TOKEN_TIME = 9100 * 1000L;
+		// long TOKEN_TIME = 20 * 1000L;
 
 		String token = BEARER_PREFIX + Jwts.builder()
 			.claim("id", loginId)
