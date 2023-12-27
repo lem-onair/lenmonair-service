@@ -22,7 +22,7 @@ public class PaymentController {
 
 	@Value("${kakao.key}")
 	private String APIKey;
-	@Value("${kakao.Secret}")
+	@Value("${kakao.secret}")
 	private String APISecret;
 
 	@PostConstruct
