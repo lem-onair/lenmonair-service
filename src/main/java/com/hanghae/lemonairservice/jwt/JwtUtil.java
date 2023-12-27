@@ -45,14 +45,15 @@ public class JwtUtil {
 	}
 
 	// 토큰 생성
-	public Mono<String> createToken(String loginId) {
+	public Mono<String> createAccessToken(String loginId, String nickname) {
 		Date date = new Date();
 
 		long TOKEN_TIME = 900 * 1000L;
 		// long TOKEN_TIME = 20 * 1000L;
 
 		String token = BEARER_PREFIX + Jwts.builder()
-			.setSubject(loginId)
+			.claim("id", loginId)
+			.claim("nickname", nickname)
 			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
 			.setIssuedAt(date)
 			.signWith(key, signatureAlgorithm)
@@ -61,13 +62,14 @@ public class JwtUtil {
 		return Mono.just(token);
 	}
 
-	public Mono<String> createRefreshToken(String loginId) {
+	public Mono<String> createRefreshToken(String loginId, String nickname) {
 		Date date = new Date();
 
 		long TOKEN_TIME = 360 * 60 * 1000L;
 		String token = BEARER_PREFIX + Jwts.builder()
 			.claim("type", "refreshToken")
-			.claim("sub", loginId)
+			.claim("id", loginId)
+			.claim("nickname", nickname)
 			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
 			.setIssuedAt(date)
 			.signWith(key, signatureAlgorithm)
@@ -116,18 +118,22 @@ public class JwtUtil {
 		}
 	}
 
-	public String getUserLoginIdFromToken(String token) {
+	public JwtTokenSubjectDto getSubjectFromToken(String token) {
 		try {
 			if (token.startsWith("Bearer ")) {
 				token = token.substring("Bearer ".length());
 			}
-			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+			var jwtBody = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+			log.info(jwtBody.get("id", String.class));
+			log.info(jwtBody.get("nickname", String.class));
+			return new JwtTokenSubjectDto(jwtBody.get("id", String.class), jwtBody.get("nickname", String.class));
 		} catch (ExpiredJwtException e) {
 			log.info("만료된 jwt 토큰일 경우에만 따로 처리하기");
-
-			return extractLoginIdFromExpiredJwtToken(token).get("sub").asText();
+			JsonNode expiredJwtBody = extractLoginIdFromExpiredJwtToken(token);
+			return new JwtTokenSubjectDto(expiredJwtBody.get("id").asText(), expiredJwtBody.get("nickname").asText());
 		}
 	}
+
 
 	private JsonNode extractLoginIdFromExpiredJwtToken(String jwt) {
 

@@ -6,6 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.hanghae.lemonairservice.dto.token.RefreshRequestDto;
 import com.hanghae.lemonairservice.dto.token.RefreshResponseDto;
+import com.hanghae.lemonairservice.jwt.JwtTokenSubjectDto;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,10 @@ public class RefreshTokenService {
 	public Mono<RefreshResponseDto> refresh(RefreshRequestDto refreshRequestDto) {
 		return jwtUtil.validateRefreshToken(refreshRequestDto.getRefreshToken()).flatMap(isValidate -> {
 			if (isValidate) {
-				String loginId = jwtUtil.getUserLoginIdFromToken(refreshRequestDto.getRefreshToken());
-				return jwtUtil.createToken(loginId).map(RefreshResponseDto::new);
+				JwtTokenSubjectDto jwtTokenSubjectDto = jwtUtil.getSubjectFromToken(
+					refreshRequestDto.getRefreshToken());
+				return jwtUtil.createAccessToken(jwtTokenSubjectDto.getLoginId(), jwtTokenSubjectDto.getNickname())
+					.map(RefreshResponseDto::new);
 			} else {
 				return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."));
 			}
