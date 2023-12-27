@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import com.hanghae.lemonairservice.dto.channel.MemberChannelDetailResponseDto;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.service.MemberChannelService;
 
@@ -35,6 +36,7 @@ class MemberChannelControllerTest {
 	// 5. WithMockUser 어노테이션이 없으면 security filter chain에 걸려서 항상 401 응답이 나온다.
 	@WithMockUser(username = "username")
 	void getChannelsByOnAirTrue() {
+		// given when then
 		/** given
 		 테스트를 위해 주어진 상태
 		 테스트 동작을 위해서 주어지는 환경과 조건을 정의
@@ -90,5 +92,4 @@ class MemberChannelControllerTest {
 		assertThat(responseChannelList.get(0).getTitle()).isEqualTo("title");
 		assertThat(responseChannelList.get(1).getStreamerNickname()).isEqualTo("nickname2");
 	}
-
 }

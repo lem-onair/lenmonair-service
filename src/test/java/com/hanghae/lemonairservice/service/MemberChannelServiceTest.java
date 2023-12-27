@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
@@ -53,7 +54,8 @@ class MemberChannelServiceTest {
 		 * 1. MemberChannelService.getChannelsByOnAirTrue() 함수가 실행된다.
 		 * 2. MemberChannelRepository.findAllByOnAirIsTrue() 함수가 실행된다.
 		 * 3. MemberChannelService.convertToMemberChannelResponseDto() 함수가 실행된다.
-		 * 4. AwsService.getThumbnailCloudFrontUrl() 함수가 실행된다.
+		 * 4. MemberRepository.findById() 함수가 실행된다.
+		 * 5. AwsService.getThumbnailCloudFrontUrl() 함수가 실행된다.
 		 */
 
 		// 5. 따라서 6~7에서 실제 테스트하고자하는 getChannelsByOnAirTrue() 메서드의 정상 동작 여부를 위해 아래의 데이터들을 생성합니다.
@@ -80,7 +82,8 @@ class MemberChannelServiceTest {
 		// expectNext, expectNextMatches, verifyComplete 등의 메서드를 통해서 생성된 Mono, Flux의 데이터를 검증합니다.
 		// 현재는 Mono<ResponseEntity<List<MemberChannelResponseDto>>> 를 리턴하여 Mono 안에 List가 있는 특수한 형태이므로
 		// 따라서 expectNextMatches 실행시 Mono 안의 ResponseEntity<List<MemberChannelResponseDto>> 를 다룰 수 있게 됩니다.
-		StepVerifier.create(memberChannelService.getChannelsByOnAirTrue()).expectNextMatches(listResponseEntity -> {
+		StepVerifier.create(memberChannelService.getChannelsByOnAirTrue())
+			.expectNextMatches(listResponseEntity -> {
 			List<MemberChannelResponseDto> body = listResponseEntity.getBody();
 			// 10. expectNextMatches 안에서는 junit, jupiter 패키지의 assert~ 메서드들을 이용하여 검증한 후 모든 assert문들을 통과하면 true를 return합니다.
 			assertNotNull(body);
@@ -110,7 +113,7 @@ class MemberChannelServiceTest {
 	 * 3. 예외를 handle하는 exception handler가 필요합니다. GlobalExceptionHandler 클래스를 참고하세요
 	 */
 	@Test
-	void getChannelsByOnAirTrueThrows() {
+	void getChannelsByOnAirTrueThrowsNoOnAirChannelException() {
 		// given
 		// 4. 검증하는 상황은 생방송중인 채널이 없어서 NoOnAirChannelException이 발생하는 상황입니다.
 		// 그러므로 MemberChannelService.getChannelsByOnAirTrue() 메소드 내에서 실행되는 로직은

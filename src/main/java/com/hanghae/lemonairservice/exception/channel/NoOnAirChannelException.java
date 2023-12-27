@@ -10,4 +10,5 @@ public class NoOnAirChannelException extends RuntimeException {
 	public NoOnAirChannelException() {
 		super(errorMsg);
 	}
+
 }
