@@ -7,9 +7,13 @@ import org.springframework.stereotype.Component;
 
 import com.hanghae.lemonairservice.entity.Member;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class PrincipalUtil {
 	public static Member getMember(Principal principal) {
+		log.info("principal:" + principal);
 		if (principal instanceof Authentication) {
 			Authentication authentication = (Authentication) principal;
 			Object principalObject = authentication.getPrincipal();
