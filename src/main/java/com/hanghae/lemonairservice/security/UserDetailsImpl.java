@@ -11,6 +11,7 @@ import lombok.Getter;
 
 public class UserDetailsImpl implements UserDetails {
 
+	@Getter
 	private final Member member;
 	private final String loginId;
 

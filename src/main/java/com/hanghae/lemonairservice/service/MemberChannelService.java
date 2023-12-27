@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.kms.model.NotFoundException;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelDetailResponseDto;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
@@ -26,6 +25,7 @@ public class MemberChannelService {
 	private final AwsService awsService;
 	private final MemberChannelRepository memberChannelRepository;
 	private final MemberRepository memberRepository;
+	private final ChatTokenService chatTokenService;
 
 	public Mono<MemberChannel> createChannel(Member member) {
 		return memberChannelRepository.save(new MemberChannel(member))
@@ -63,7 +63,10 @@ public class MemberChannelService {
 	private Mono<MemberChannelDetailResponseDto> convertToMemberChannelDetailResponseDto(MemberChannel memberChannel) {
 		return memberRepository.findById(memberChannel.getMemberId())
 			.doOnNext(memberChannel::setMember)
-			.map(member -> new MemberChannelDetailResponseDto(memberChannel,
-				awsService.getM3U8CloudFrontUrl(member.getLoginId())));
+			.flatMap(member -> {
+				Mono<String> chatTokenMono = chatTokenService.getChatToken(member);
+				return chatTokenMono.map(chatToken -> new MemberChannelDetailResponseDto(memberChannel,
+					awsService.getM3U8CloudFrontUrl(member.getLoginId()), chatToken));
+			});
 	}
 }
