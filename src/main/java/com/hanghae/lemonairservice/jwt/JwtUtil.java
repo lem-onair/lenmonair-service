@@ -49,6 +49,7 @@ public class JwtUtil {
 		Date date = new Date();
 
 		long TOKEN_TIME = 9100 * 1000L;
+
 		// long TOKEN_TIME = 20 * 1000L;
 
 		String token = BEARER_PREFIX + Jwts.builder()
