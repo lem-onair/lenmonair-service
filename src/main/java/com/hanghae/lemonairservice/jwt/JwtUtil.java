@@ -49,7 +49,7 @@ public class JwtUtil {
 		Date date = new Date();
 
 		// long TOKEN_TIME = 900 * 1000L;
-		long TOKEN_TIME = 20 * 1000L;
+		long TOKEN_TIME = 6000 * 1000L;
 
 		String token = BEARER_PREFIX + Jwts.builder()
 			.claim("id", loginId)

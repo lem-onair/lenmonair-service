@@ -40,4 +40,7 @@ CREATE TABLE point_log
 
 
 ALTER TABLE member_channel
-    ADD started_at DATETIME;
+    ADD started_at TIMESTAMP;
+
+ALTER TABLE member_channel
+    ADD total_streaming INTEGER NOT NULL;
