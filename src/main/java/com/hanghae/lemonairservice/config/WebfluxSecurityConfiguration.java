@@ -2,6 +2,7 @@ package com.hanghae.lemonairservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -29,15 +30,12 @@ public class WebfluxSecurityConfiguration {
 			.formLogin(ServerHttpSecurity.FormLoginSpec::disable)
 			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 
-
-
-			.authorizeExchange((exchanges) -> exchanges.pathMatchers("/**").permitAll().anyExchange().authenticated())
-
-			// .authorizeExchange((exchanges) -> exchanges.pathMatchers("/api/signup", "/api/login", "/api/rtmp/**")
-			// 	.permitAll()
-			// 	.anyExchange()
-			// 	.authenticated())
-
+			// .authorizeExchange((exchanges) -> exchanges.pathMatchers("/**").permitAll().anyExchange().authenticated())
+			// 브라우저의 CORS 정책 확인용 preFlight 요청이 security chain에 걸려서 401 응답을 받는다. 따라서 OPTIONS 메소드 요청의 경우 인증인가 진행 X
+			.authorizeExchange((exchanges)->exchanges.pathMatchers(HttpMethod.OPTIONS).permitAll())
+			.authorizeExchange(
+				(exchanges) -> exchanges.pathMatchers("/api/channels/**", "/api/signup", "/api/logout", "/api/login",
+					"/api/rtmp/**").permitAll().anyExchange().authenticated())
 
 			.securityContextRepository(securityContextRepository)
 			.authenticationManager(authenticationManager)
