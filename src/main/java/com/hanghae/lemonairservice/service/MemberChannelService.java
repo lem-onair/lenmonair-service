@@ -39,9 +39,7 @@ public class MemberChannelService {
 			// 2-2. 개선된 코드 :  개발자가 예외 발생 상황만 보고도 어떤 오류발생상황인지 알도록 Custom Exception Class를 Naming합니다.
 			.switchIfEmpty(Mono.error(new NoOnAirChannelException()))
 			// 3. Custom Exception Class의 구조를 확인하세요
-			.flatMap(this::convertToMemberChannelResponseDto)
-			.collectList()
-			.map(ResponseEntity::ok);
+			.flatMap(this::convertToMemberChannelResponseDto).collectList().map(ResponseEntity::ok);
 	}
 
 	public Mono<ResponseEntity<MemberChannelDetailResponseDto>> getChannelDetail(Long channelId) {
@@ -63,10 +61,7 @@ public class MemberChannelService {
 	private Mono<MemberChannelDetailResponseDto> convertToMemberChannelDetailResponseDto(MemberChannel memberChannel) {
 		return memberRepository.findById(memberChannel.getMemberId())
 			.doOnNext(memberChannel::setMember)
-			.flatMap(member -> {
-				Mono<String> chatTokenMono = chatTokenService.getChatToken(member);
-				return chatTokenMono.map(chatToken -> new MemberChannelDetailResponseDto(memberChannel,
-					awsService.getM3U8CloudFrontUrl(member.getLoginId()), chatToken));
-			});
+			.map(member -> new MemberChannelDetailResponseDto(memberChannel,
+				awsService.getM3U8CloudFrontUrl(member.getLoginId())));
 	}
 }
