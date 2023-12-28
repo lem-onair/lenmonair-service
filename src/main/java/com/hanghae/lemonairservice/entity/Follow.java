@@ -14,17 +14,15 @@ import lombok.Setter;
 public class Follow {
 	@Id
 	private Long id;
-	@Column("streamer_id")
-	private Long streamerId;
-	@Column("member_id")
-	private Long memberId;
+	private Long following;
+	private Long follower;
 
 	@Transient
 	private MemberChannel memberChannel;
 
-	public Follow(Long streamerId, Long memberId){
-		this.streamerId = streamerId;
-		this.memberId = memberId;
+	public Follow(Long following, Long follower){
+		this.following = following;
+		this.follower = follower;
 	}
 
 

@@ -40,8 +40,8 @@ CREATE TABLE point_log
 CREATE TABLE follow
 (
     id                  SERIAL PRIMARY KEY,
-    streamer_id         BIGINT NOT NULL,
-    member_id           BIGINT NOT NULL
+    following         BIGINT NOT NULL,
+    follower           BIGINT NOT NULL
 );
 
 
