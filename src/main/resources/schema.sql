@@ -24,7 +24,7 @@ CREATE TABLE point
 (
     id                  SERIAL PRIMARY KEY,
     member_id           BIGINT NOT NULL UNIQUE,
-    point               INTEGER NOT NULL,
+    point               INTEGER,
     nickname            VARCHAR(255) NOT NULL
 );
 
@@ -40,7 +40,7 @@ CREATE TABLE point_log
 
 
 ALTER TABLE member_channel
-    ADD started_at TIMESTAMP;
+    ADD started_at DATETIME;
 
 ALTER TABLE member_channel
-    ADD total_streaming INTEGER NOT NULL;
+    DROP streamer_nickname;

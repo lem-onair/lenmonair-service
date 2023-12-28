@@ -10,12 +10,14 @@ public class MemberChannelDetailResponseDto {
 	private String streamerNickname;
 	private String title;
 	private String hlsUrl;
+	private String chattingRoomId;
 
 	public MemberChannelDetailResponseDto(MemberChannel memberChannel, String hlsUrl) {
 		this.channelId = memberChannel.getId();
-		this.streamerNickname = memberChannel.getStreamerNickname();
+		this.streamerNickname = memberChannel.getMember().getNickname();
 		this.title = memberChannel.getTitle();
 		this.hlsUrl = hlsUrl;
+		// this.chattingRoomId = Base64.getEncoder().encodeToString(this.streamerNickname.getBytes(StandardCharsets.UTF_8));
+		this.chattingRoomId = this.streamerNickname;
 	}
-
 }

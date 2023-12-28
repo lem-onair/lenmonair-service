@@ -48,8 +48,9 @@ public class JwtUtil {
 	public Mono<String> createAccessToken(String loginId, String nickname) {
 		Date date = new Date();
 
-		// long TOKEN_TIME = 900 * 1000L;
-		long TOKEN_TIME = 6000 * 1000L;
+		long TOKEN_TIME = 9100 * 1000L;
+
+		// long TOKEN_TIME = 20 * 1000L;
 
 		String token = BEARER_PREFIX + Jwts.builder()
 			.claim("id", loginId)
@@ -68,6 +69,23 @@ public class JwtUtil {
 		long TOKEN_TIME = 360 * 60 * 1000L;
 		String token = BEARER_PREFIX + Jwts.builder()
 			.claim("type", "refreshToken")
+			.claim("id", loginId)
+			.claim("nickname", nickname)
+			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+			.setIssuedAt(date)
+			.signWith(key, signatureAlgorithm)
+			.compact();
+
+		return Mono.just(token);
+	}
+
+	public Mono<String> createChatToken(String loginId, String nickname){
+		Date date = new Date();
+
+		// 채팅서버 연결용 토큰으로 발급 시점은 생방송에 접근할때이다.
+		long TOKEN_TIME = 30 * 1000L;
+		String token = BEARER_PREFIX + Jwts.builder()
+			.claim("type", "chatToken")
 			.claim("id", loginId)
 			.claim("nickname", nickname)
 			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
@@ -130,6 +148,7 @@ public class JwtUtil {
 		} catch (ExpiredJwtException e) {
 			log.info("만료된 jwt 토큰일 경우에만 따로 처리하기");
 			JsonNode expiredJwtBody = extractLoginIdFromExpiredJwtToken(token);
+
 			return new JwtTokenSubjectDto(expiredJwtBody.get("id").asText(), expiredJwtBody.get("nickname").asText());
 		}
 	}
@@ -138,9 +157,10 @@ public class JwtUtil {
 	private JsonNode extractLoginIdFromExpiredJwtToken(String jwt) {
 
 		jwt = jwt.substring(jwt.indexOf('.') + 1, jwt.lastIndexOf('.'));
-		log.info(jwt);
+		log.info("만료된 jwt토큰의  payload 부분" +jwt);
 		Base64.Decoder decoder = Base64.getUrlDecoder();
 		String claimsString = new String(decoder.decode(jwt));
+		log.info("claimsString : " + claimsString);
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
 			return objectMapper.readTree(claimsString);
