@@ -80,4 +80,11 @@ public class PointService {
 
 		return Mono.just(ResponseEntity.ok(donationRankDto));
 	}
+
+	public Mono<ResponseEntity<PointResponseDto>> getPoint(Member member) {
+		return pointRepository.findById(member.getId())
+			.switchIfEmpty(Mono.error(new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다.")))
+			.map(getPoint-> ResponseEntity.ok().body(new PointResponseDto(member, getPoint.getPoint())));
+	}
 }
