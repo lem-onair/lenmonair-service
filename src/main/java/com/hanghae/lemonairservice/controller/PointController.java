@@ -33,21 +33,20 @@ public class PointController {
 
 	@PostMapping("/point")
 	public Mono<ResponseEntity<PointResponseDto>> addPoint(@RequestBody AddPointRequestDto addPointRequestDto,
-		Principal user){
+		Principal user) {
 		log.info("point :" + addPointRequestDto.getPoint());
 		return pointService.addpoint(addPointRequestDto, PrincipalUtil.getMember(user));
 	}
 
 	@PostMapping("/{streamerId}/donations")
-	public Mono<ResponseEntity<DonationResponseDto>> usePoint(@PathVariable Long streamerId, @RequestBody DonationRequestDto donationRequestDto,
-		@AuthenticationPrincipal Principal user){
-		return pointService.usePoint(donationRequestDto, PrincipalUtil.getMember(user),streamerId);
+	public Mono<ResponseEntity<DonationResponseDto>> usePoint(@PathVariable Long streamerId,
+		@RequestBody DonationRequestDto donationRequestDto, @AuthenticationPrincipal Principal user) {
+		return pointService.usePoint(donationRequestDto, PrincipalUtil.getMember(user), streamerId);
 	}
 
 	@GetMapping("/donations/rank")
-	public Mono<ResponseEntity<Flux<DonationRankingDto>>> donationRank(@AuthenticationPrincipal Principal user){
+	public Mono<ResponseEntity<Flux<DonationRankingDto>>> donationRank(@AuthenticationPrincipal Principal user) {
 		return pointService.donationRank(PrincipalUtil.getMember(user));
 	}
-
 
 }

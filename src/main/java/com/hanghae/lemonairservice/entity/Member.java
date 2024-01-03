@@ -1,6 +1,7 @@
 package com.hanghae.lemonairservice.entity;
 
-import java.util.UUID;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,9 +9,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
-
 
 @Table("member")
 @Getter
@@ -32,6 +30,7 @@ public class Member {
 	private String nickname;
 
 	private String streamKey;
+
 	public Member(String email, String password, String loginId, String nickname, String streamKey) {
 		this.email = email;
 		this.password = password;
