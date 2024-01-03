@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.io.NotActiveException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import com.hanghae.lemonairservice.dto.channel.MemberChannelDetailResponseDto;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
@@ -88,7 +90,7 @@ class MemberChannelServiceTest {
 			// 10. expectNextMatches 안에서는 junit, jupiter 패키지의 assert~ 메서드들을 이용하여 검증한 후 모든 assert문들을 통과하면 true를 return합니다.
 			assertNotNull(body);
 			assertThat(body.size()).isEqualTo(2);
-			assertThat(body.get(0).getTitle()).isEqualTo("title1");
+			assertThat(body.get(0).getTitle()).isEqualTo("title2");
 			assertThat(body.get(1).getThumbnailUrl()).isEqualTo("mytesturl2");
 			assertThat(body.get(1).getStreamerNickname()).isEqualTo("nickname2");
 			return true;
@@ -126,5 +128,20 @@ class MemberChannelServiceTest {
 		// StepVerifier.create로 결국 Mono.error를 생성하는 꼴이 되며, Mono.error가 생성되기를 기대하는 경우 verifyError를 활용합니다.
 		StepVerifier.create(memberChannelService.getChannelsByOnAirTrue())
 			.verifyError(NoOnAirChannelException.class);
+	}
+
+	@Test
+	void getChannelDetailsSuccessTest(){
+		MemberChannel memberChannel1 = MemberChannel.builder().id(1L).title("안녕하세요").memberId(1L).totalStreaming(0).startedAt(null)
+			.onAir(true).build();
+
+		given(memberChannelRepository.findById(memberChannel1.getId())).willReturn(Mono.just(memberChannel1));
+
+		StepVerifier.create(memberChannelService.getChannelDetail(memberChannel1.getId()))
+				.expectNextMatches(detail->{
+					assertThat(detail.getBody().getTitle()).isEqualTo("반갑습니다");
+					return true;
+				});
+	verify(memberChannelRepository).findById(memberChannel1.getId());
 	}
 }
