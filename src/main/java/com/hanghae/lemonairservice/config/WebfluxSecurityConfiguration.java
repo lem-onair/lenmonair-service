@@ -35,7 +35,7 @@ public class WebfluxSecurityConfiguration {
 			.authorizeExchange((exchanges)->exchanges.pathMatchers(HttpMethod.OPTIONS).permitAll())
 			.authorizeExchange(
 				(exchanges) -> exchanges.pathMatchers("/api/channels/**", "/api/signup", "/api/logout", "/api/login",
-					"/api/rtmp/**").permitAll().anyExchange().authenticated())
+					"/api/streams/**").permitAll().anyExchange().authenticated())
 
 			.securityContextRepository(securityContextRepository)
 			.authenticationManager(authenticationManager)
