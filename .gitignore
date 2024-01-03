@@ -41,3 +41,5 @@ application-local.yaml
 application-local.yml
 application-secret.yaml
 application-secret.yml
+application-deploy.yaml
+application-deploy.yml
