@@ -39,6 +39,4 @@ public class PaymentController {
 		throws IamportResponseException, IOException {
 		return iamportClient.paymentByImpUid(imp_uid);
 	}
-
-
 }

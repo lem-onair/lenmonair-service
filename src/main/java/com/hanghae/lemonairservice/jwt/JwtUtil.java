@@ -83,7 +83,7 @@ public class JwtUtil {
 		Date date = new Date();
 
 		// 채팅서버 연결용 토큰으로 발급 시점은 생방송에 접근할때이다.
-		long TOKEN_TIME = 30 * 1000L;
+		long TOKEN_TIME = 3000000 * 1000L;
 		String token = BEARER_PREFIX + Jwts.builder()
 			.claim("type", "chatToken")
 			.claim("id", loginId)
