@@ -1,7 +1,5 @@
 package com.hanghae.lemonairservice.entity;
 
-import java.util.List;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
@@ -27,10 +25,7 @@ public class Point {
 	@Transient
 	private Member member;
 
-	// @Transient
-	// private List<PointLog> pointlogs;
-
-	public Point(Member member){
+	public Point(Member member) {
 		this.memberId = member.getId();
 		this.nickname = member.getNickname();
 		this.point = 0;

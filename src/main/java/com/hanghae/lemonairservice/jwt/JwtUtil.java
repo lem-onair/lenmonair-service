@@ -11,7 +11,6 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -30,9 +29,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class JwtUtil {
 
-	public static final String AUTHORIZATION_HEADER = "Authorization";
 	public static final String BEARER_PREFIX = "Bearer ";
-	private final RefreshTokenRepository refreshTokenRepository;
 	private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 	@Value("${jwt.secretKey}")
 	private String secretKey;
@@ -48,9 +45,7 @@ public class JwtUtil {
 	public Mono<String> createAccessToken(String loginId, String nickname) {
 		Date date = new Date();
 
-		long TOKEN_TIME = 9100 * 1000L;
-
-		// long TOKEN_TIME = 20 * 1000L;
+		long TOKEN_TIME = 20 * 60 * 1000L;
 
 		String token = BEARER_PREFIX + Jwts.builder()
 			.claim("id", loginId)
@@ -79,11 +74,10 @@ public class JwtUtil {
 		return Mono.just(token);
 	}
 
-	public Mono<String> createChatToken(String loginId, String nickname){
+	public Mono<String> createChatToken(String loginId, String nickname) {
 		Date date = new Date();
 
-		// 채팅서버 연결용 토큰으로 발급 시점은 생방송에 접근할때이다.
-		long TOKEN_TIME = 3000000 * 1000L;
+		long TOKEN_TIME = 30 * 1000L;
 		String token = BEARER_PREFIX + Jwts.builder()
 			.claim("type", "chatToken")
 			.claim("id", loginId)
@@ -153,11 +147,10 @@ public class JwtUtil {
 		}
 	}
 
-
 	private JsonNode extractLoginIdFromExpiredJwtToken(String jwt) {
 
 		jwt = jwt.substring(jwt.indexOf('.') + 1, jwt.lastIndexOf('.'));
-		log.info("만료된 jwt토큰의  payload 부분" +jwt);
+		log.info("만료된 jwt토큰의  payload 부분" + jwt);
 		Base64.Decoder decoder = Base64.getUrlDecoder();
 		String claimsString = new String(decoder.decode(jwt));
 		log.info("claimsString : " + claimsString);

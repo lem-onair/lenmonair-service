@@ -1,7 +1,5 @@
 package com.hanghae.lemonairservice.jwt;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter

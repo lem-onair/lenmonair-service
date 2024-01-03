@@ -1,7 +1,5 @@
 package com.hanghae.lemonairservice.controller;
 
-import java.security.Principal;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +11,6 @@ import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
 import com.hanghae.lemonairservice.dto.member.LoginResponseDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
-import com.hanghae.lemonairservice.security.PrincipalUtil;
 import com.hanghae.lemonairservice.security.UserDetailsImpl;
 import com.hanghae.lemonairservice.service.MemberService;
 
