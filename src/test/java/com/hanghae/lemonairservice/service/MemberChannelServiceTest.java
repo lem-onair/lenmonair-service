@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import java.io.NotActiveException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -12,9 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
 
-import com.hanghae.lemonairservice.dto.channel.MemberChannelDetailResponseDto;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
@@ -135,13 +132,88 @@ class MemberChannelServiceTest {
 		MemberChannel memberChannel1 = MemberChannel.builder().id(1L).title("안녕하세요").memberId(1L).totalStreaming(0).startedAt(null)
 			.onAir(true).build();
 
-		given(memberChannelRepository.findById(memberChannel1.getId())).willReturn(Mono.just(memberChannel1));
+		Member member1 = Member.builder().id(1L).email("email1").nickname("nickname1").loginId("loginId1").build();
 
+		given(memberChannelRepository.findById(memberChannel1.getId())).willReturn(Mono.just(memberChannel1));
+		given(memberRepository.findById(memberChannel1.getId())).willReturn(Mono.just(member1));
+		given(awsService.getM3U8CloudFrontUrl(member1.getLoginId())).willReturn("hello1");
+		StepVerifier.create(memberChannelService.getChannelDetail(memberChannel1.getId()))
+			.expectNextMatches(detail->{
+				assertThat(detail.getBody().getTitle()).isEqualTo("안녕하세요");
+				assertThat(detail.getBody().getChannelId()).isEqualTo(1L);
+
+				return true;
+			}).verifyComplete();
+		verify(memberChannelRepository).findById(memberChannel1.getId());
+		verify(memberChannelRepository).findById(memberChannel1.getId());
+		verify(awsService).getM3U8CloudFrontUrl(member1.getLoginId());
+	}
+
+	@Test
+	void getChannelDetailsFailedTest(){
+		MemberChannel memberChannel1 = MemberChannel.builder().id(1L).title("안녕하세요").memberId(1L).totalStreaming(0).startedAt(null)
+			.onAir(true).build();
+
+		Member member1 = Member.builder().id(1L).email("email1").nickname("nickname1").loginId("loginId1").build();
+
+		given(memberChannelRepository.findById(memberChannel1.getId())).willReturn(Mono.just(memberChannel1));
+		given(memberRepository.findById(memberChannel1.getId())).willReturn(Mono.just(member1));
+		given(awsService.getM3U8CloudFrontUrl(member1.getLoginId())).willReturn("hello1");
 		StepVerifier.create(memberChannelService.getChannelDetail(memberChannel1.getId()))
 				.expectNextMatches(detail->{
 					assertThat(detail.getBody().getTitle()).isEqualTo("반갑습니다");
 					return true;
-				});
+				}).verifyComplete();
 	verify(memberChannelRepository).findById(memberChannel1.getId());
+	verify(memberChannelRepository).findById(memberChannel1.getId());
+	verify(awsService).getM3U8CloudFrontUrl(member1.getLoginId());
 	}
+
+	// @Test
+	// void convertToMemberChannelResponseDtoSuccessTest(){
+	// 	// Given
+	// 	MemberChannel memberChannel1 = MemberChannel.builder().id(1L).title("안녕하세요").memberId(1L).totalStreaming(0).startedAt(null)
+	// 		.onAir(true).build();
+	//
+	// 	Member member1 = Member.builder().id(1L).email("email1").nickname("nickname1").loginId("loginId1").build();
+	//
+	// 	given(memberRepository.findById(memberChannel1.getId())).willReturn(Mono.just(member1));
+	// 	given(awsService.getThumbnailCloudFrontUrl(member1.getLoginId())).willReturn("hi");
+	//
+	// 	// When
+	// 	StepVerifier.create(memberChannelService.convertToMemberChannelResponseDto(memberChannel1))
+	// 		.expectNextMatches(dto -> {
+	// 			assertTrue(dto instanceof MemberChannelResponseDto);
+	// 			return true;
+	// 		})
+	// 		.verifyComplete();
+	//
+	// 	// Then
+	// 	verify(memberRepository).findById(memberChannel1.getId());
+	// 	verify(awsService).getThumbnailCloudFrontUrl(member1.getLoginId());
+	// }
+
+	// @Test
+	// void convertToMemberChannelDetailResponseDto(){
+	// 	// Given
+	// 	MemberChannel memberChannel1 = MemberChannel.builder().id(1L).title("안녕하세요").memberId(1L).totalStreaming(0).startedAt(null)
+	// 		.onAir(true).build();
+	//
+	// 	Member member1 = Member.builder().id(1L).email("email1").nickname("nickname1").loginId("loginId1").build();
+	//
+	// 	given(memberRepository.findById(memberChannel1.getId())).willReturn(Mono.just(member1));
+	// 	given(awsService.getM3U8CloudFrontUrl(member1.getLoginId())).willReturn("hi");
+	//
+	// 	// When
+	// 	StepVerifier.create(memberChannelService.convertToMemberChannelDetailResponseDto(memberChannel1))
+	// 		.expectNextMatches(dto -> {
+	// 			assertTrue(dto instanceof MemberChannelDetailResponseDto);
+	// 			return true;
+	// 		})
+	// 		.verifyComplete();
+	//
+	// 	// Then
+	// 	verify(memberRepository).findById(memberChannel1.getId());
+	// 	verify(awsService).getM3U8CloudFrontUrl(member1.getLoginId());
+	// }
 }

@@ -1,14 +1,11 @@
 package com.hanghae.lemonairservice.service;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
-
-import com.amazonaws.services.s3.AmazonS3;
-import com.hanghae.lemonairservice.entity.Member;
 
 @ExtendWith(MockitoExtension.class)
 public class AwsServiceTest {
@@ -17,12 +14,21 @@ public class AwsServiceTest {
 	private AwsService awsService;
 
 	@Test
-	void getThumbnailCloudFrontUrl(){
+	void getThumbnailCloudFrontUrlSuccess(){
 
-		String streamerId = "mbkang922";
-		String expectedUrl = "https://your-cloudfront-domain.com/testStreamer/thumbnail/testStreamer_thumbnail.jpg";
+		String streamerLoginId = "mbkang922";
+		String uri = "/" + streamerLoginId + "/thumbnail/" + streamerLoginId + "_thumbnail.jpg";
+		String generatedUrl = awsService.getThumbnailCloudFrontUrl(streamerLoginId);
+
+		assertThat(generatedUrl).isEqualTo("null"+uri);
 	}
+	@Test
+	void getM3U8CloudFrontUrl(){
 
+		String streamerLoginId = "mbkang922";
+		String uri = "/" + streamerLoginId + "/videos/" + "m3u8-" + streamerLoginId + ".m3u8";
+		String generatedUrl = awsService.getM3U8CloudFrontUrl(streamerLoginId);
 
-
+		assertThat(generatedUrl).isEqualTo("null"+uri);
+	}
 }

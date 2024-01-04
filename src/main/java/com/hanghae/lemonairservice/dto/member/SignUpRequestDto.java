@@ -1,9 +1,15 @@
 package com.hanghae.lemonairservice.dto.member;
 
 import jakarta.validation.constraints.Email;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class SignUpRequestDto {
 
 	@Email
