@@ -18,6 +18,6 @@ public class MemberChannelDetailResponseDto {
 		this.title = memberChannel.getTitle();
 		this.hlsUrl = hlsUrl;
 		// this.chattingRoomId = Base64.getEncoder().encodeToString(this.streamerNickname.getBytes(StandardCharsets.UTF_8));
-		this.chattingRoomId = this.streamerNickname;
+		this.chattingRoomId = memberChannel.getMember().getLoginId();
 	}
 }
