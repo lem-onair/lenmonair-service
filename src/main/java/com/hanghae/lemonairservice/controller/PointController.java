@@ -38,6 +38,11 @@ public class PointController {
 		return pointService.addpoint(addPointRequestDto, PrincipalUtil.getMember(user));
 	}
 
+	@GetMapping("/point")
+	public Mono<ResponseEntity<PointResponseDto>> getPoint(@AuthenticationPrincipal Principal user){
+		return pointService.getPoint(PrincipalUtil.getMember(user));
+	}
+
 	@PostMapping("/{streamerId}/donations")
 	public Mono<ResponseEntity<DonationResponseDto>> usePoint(@PathVariable Long streamerId,
 		@RequestBody DonationRequestDto donationRequestDto, @AuthenticationPrincipal Principal user) {
