@@ -54,5 +54,4 @@ public class MemberChannel {
 		this.startedAt = startedAt;
 	}
 
-
 }
