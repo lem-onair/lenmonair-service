@@ -75,6 +75,8 @@ public class PointService {
 
 	public Mono<ResponseEntity<Flux<DonationRankingDto>>> donationRank(Member member) {
 		Flux<DonationRankingDto> donationRankDto = pointLogRepository.findByStreamerIdOrderBySumOfDonateLimit10(member.getId())
+			.switchIfEmpty(Mono.error(new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다.")))
 			.concatMap(userId -> pointRepository.findById(userId).flux())
 			.map(point -> new DonationRankingDto(point.getNickname()));
 

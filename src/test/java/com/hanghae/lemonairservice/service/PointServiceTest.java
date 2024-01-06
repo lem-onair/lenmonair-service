@@ -1,31 +1,31 @@
 package com.hanghae.lemonairservice.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.FactoryBasedNavigableListAssert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.hanghae.lemonairservice.dto.point.AddPointRequestDto;
+import com.hanghae.lemonairservice.dto.point.DonationRankingDto;
 import com.hanghae.lemonairservice.dto.point.DonationRequestDto;
-import com.hanghae.lemonairservice.dto.point.PointResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.Point;
 import com.hanghae.lemonairservice.entity.PointLog;
 import com.hanghae.lemonairservice.repository.PointLogRepository;
 import com.hanghae.lemonairservice.repository.PointRepository;
 
-import jakarta.validation.constraints.Null;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import software.amazon.awssdk.http.HttpStatusCode;
 
 @ExtendWith(MockitoExtension.class)
 public class PointServiceTest {
@@ -127,6 +127,49 @@ public class PointServiceTest {
 		verify(pointRepository,never()).save(any());
 		verify(pointLogRepository,never()).save(any());
 	}
+
+
+	@Test
+	void donationRankSuccessTest(){
+		Member member1 = Member.builder().id(1L).email("kangminbeom@gmail.com").password("Rkdalsqja1!")
+			.loginId("kangminbeom").nickname("user1").streamKey("1234").build();
+
+		// Mock 데이터 생성
+
+		PointLog pointlog1 = PointLog.builder().id(1L).streamerId(1L).donaterId(2L).contents("힘내세요").donated_At(LocalDateTime.now()).donatePoint(100).build();
+
+		PointLog pointlog2 = PointLog.builder().id(2L).streamerId(1L).donaterId(3L).contents("힘내세요").donated_At(LocalDateTime.now()).donatePoint(200).build();
+
+		Point point2 = Point.builder().id(2L).memberId(2L).nickname("user2").point(200).build();
+		Point point3 = Point.builder().id(3L).memberId(3L).nickname("user3").point(100).build();
+
+		// Mock 설정
+		given(pointLogRepository.findByStreamerIdOrderBySumOfDonateLimit10(member1.getId()))
+			.willReturn(Flux.just(pointlog1.getDonaterId(), pointlog2.getDonaterId()));
+		given(pointRepository.findById(2L)).willReturn(Mono.just(point2));
+		given(pointRepository.findById(3L)).willReturn(Mono.just(point3));
+
+		StepVerifier.create(pointService.donationRank(member1))
+			.expectNextMatches(rank -> {
+				assertThat(rank.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+				Flux<DonationRankingDto> fluxdonationRanking = rank.getBody();
+				assertThat(fluxdonationRanking).isNotNull();
+
+				List<DonationRankingDto> listdonationRanking = fluxdonationRanking.collectList().block();
+				assertThat(listdonationRanking).isNotNull();
+				assertThat(listdonationRanking).hasSize(2);
+
+				assertThat(listdonationRanking.get(0).getNickname()).isEqualTo("user2");
+				assertThat(listdonationRanking.get(1).getNickname()).isEqualTo("user3");
+				return true;
+			}).verifyComplete();
+		verify(pointLogRepository).findByStreamerIdOrderBySumOfDonateLimit10(member1.getId());
+		verify(pointRepository).findById(2L);
+		verify(pointRepository).findById(3L);
+	}
+
+
 
 
 

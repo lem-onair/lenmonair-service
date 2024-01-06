@@ -8,9 +8,9 @@ import lombok.Getter;
 
 @Getter
 public class DonationRankingDto {
-	private String rank;
+	private String nickname;
 
 	public DonationRankingDto(String nickname) {
-		this.rank = nickname;
+		this.nickname = nickname;
 	}
 }
