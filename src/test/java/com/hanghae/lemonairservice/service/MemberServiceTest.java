@@ -1,6 +1,5 @@
 package com.hanghae.lemonairservice.service;
 
-import static org.assertj.core.api.FactoryBasedNavigableListAssert.*;
 import static org.mockito.BDDMockito.*;
 
 import org.junit.jupiter.api.Test;
@@ -9,9 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hanghae.lemonairservice.dto.member.LoginRequestDto;

@@ -10,12 +10,18 @@ import org.springframework.data.relational.core.mapping.Table;
 import com.hanghae.lemonairservice.dto.point.DonationRequestDto;
 import com.hanghae.lemonairservice.dto.point.DonationResponseDto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Table("point_log")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class PointLog {
 	@Id
 	private Long id;
