@@ -71,13 +71,13 @@ public class MemberServiceTest {
 			.expectNextMatches(signup ->{
 				return signup.getStatusCode().is2xxSuccessful() && signup.getBody() != null;
 			}).verifyComplete();
-		//
-		// verify(memberRepository.existsByEmail(signUpRequestDto.getEmail()));
-		// verify(memberRepository.existsByNickname(signUpRequestDto.getNickname()));
-		// verify(memberRepository.existsByLoginId(signUpRequestDto.getLoginId()));
-		// verify(memberRepository.save(Mockito.any(Member.class)));
-		// verify(memberChannelRepository.save(Mockito.any(MemberChannel.class)));
-		// verify(pointRepository.save(Mockito.any(Point.class)));
+
+		verify(memberRepository.existsByEmail(signUpRequestDto.getEmail()));
+		verify(memberRepository.existsByNickname(signUpRequestDto.getNickname()));
+		verify(memberRepository.existsByLoginId(signUpRequestDto.getLoginId()));
+		verify(memberRepository.save(Mockito.any(Member.class)));
+		verify(memberChannelRepository.save(Mockito.any(MemberChannel.class)));
+		verify(pointRepository.save(Mockito.any(Point.class)));
 
 
 			// .expectNextMatches(signup -> {
