@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -169,6 +170,23 @@ public class PointServiceTest {
 		verify(pointRepository).findById(3L);
 	}
 
+	@Test
+	void donationRankFailedTest(){
+		Member member1 = Member.builder().id(1L).email("kangminbeom@gmail.com").password("Rkdalsqja1!")
+			.loginId("kangminbeom").nickname("user1").streamKey("1234").build();
+
+		// Mock 설정
+		given(pointLogRepository.findByStreamerIdOrderBySumOfDonateLimit10(member1.getId())).willReturn(Flux.empty());
+
+		StepVerifier.create(pointService.donationRank(member1))
+			.expectErrorMatches(rank ->
+				rank instanceof ResponseStatusException &&
+				((ResponseStatusException)rank).getStatusCode() == HttpStatus.BAD_REQUEST &&
+				rank.getMessage().contains("후원받은 레몬이 없습니다."))
+			.verify();
+
+		verify(pointLogRepository).findByStreamerIdOrderBySumOfDonateLimit10(member1.getId());
+	}
 
 
 

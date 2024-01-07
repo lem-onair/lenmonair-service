@@ -74,12 +74,22 @@ public class PointService {
 	}
 
 	public Mono<ResponseEntity<Flux<DonationRankingDto>>> donationRank(Member member) {
-		Flux<DonationRankingDto> donationRankDto = pointLogRepository.findByStreamerIdOrderBySumOfDonateLimit10(member.getId())
-			.switchIfEmpty(Mono.error(new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다.")))
-			.concatMap(userId -> pointRepository.findById(userId).flux())
-			.map(point -> new DonationRankingDto(point.getNickname()));
-
-		return Mono.just(ResponseEntity.ok(donationRankDto));
+		return pointLogRepository.findByStreamerIdOrderBySumOfDonateLimit10(member.getId())
+			.flatMap(userId -> pointRepository.findById(userId))
+			.map(point -> {
+				String nickname = (point != null) ? point.getNickname() : null;
+				return new DonationRankingDto(nickname);
+			})
+			.collectList()
+			.flatMap(donationRankDto -> {
+				if (donationRankDto == null || donationRankDto.isEmpty()) {
+					return Mono.error(new ResponseStatusException(
+						HttpStatus.BAD_REQUEST, "후원받은 레몬이 없습니다."));
+				} else {
+					return Mono.just(ResponseEntity.ok(Flux.fromIterable(donationRankDto)));
+				}
+			});
+			// .switchIfEmpty(Mono.error(new ResponseStatusException(
+			// 	HttpStatus.BAD_REQUEST, "후원받은 레몬이 없습니다.")));
 	}
 }
