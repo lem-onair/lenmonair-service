@@ -15,7 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
+import com.hanghae.lemonairservice.exception.channel.NoExistChannelException;
 import com.hanghae.lemonairservice.exception.channel.NoOnAirChannelException;
+import com.hanghae.lemonairservice.exception.channel.OffAirBroadCastException;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 
@@ -141,7 +143,6 @@ class MemberChannelServiceTest {
 			.expectNextMatches(detail->{
 				assertThat(detail.getBody().getTitle()).isEqualTo("안녕하세요");
 				assertThat(detail.getBody().getChannelId()).isEqualTo(1L);
-
 				return true;
 			}).verifyComplete();
 		verify(memberChannelRepository).findById(memberChannel1.getId());
@@ -150,24 +151,32 @@ class MemberChannelServiceTest {
 	}
 
 	@Test
-	void getChannelDetailsFailedTest(){
+	void getChannelDetailsThrowsNoExistChannelException(){
 		MemberChannel memberChannel1 = MemberChannel.builder().id(1L).title("안녕하세요").memberId(1L).totalStreaming(0).startedAt(null)
 			.onAir(true).build();
 
-		Member member1 = Member.builder().id(1L).email("email1").nickname("nickname1").loginId("loginId1").build();
+		Long channelId = 1L;
 
-		given(memberChannelRepository.findById(memberChannel1.getId())).willReturn(Mono.just(memberChannel1));
-		given(memberRepository.findById(memberChannel1.getId())).willReturn(Mono.just(member1));
-		given(awsService.getM3U8CloudFrontUrl(member1.getLoginId())).willReturn("hello1");
-		StepVerifier.create(memberChannelService.getChannelDetail(memberChannel1.getId()))
-				.expectNextMatches(detail->{
-					assertThat(detail.getBody().getTitle()).isEqualTo("반갑습니다");
-					return true;
-				}).verifyComplete();
-	verify(memberChannelRepository).findById(memberChannel1.getId());
-	verify(memberChannelRepository).findById(memberChannel1.getId());
-	verify(awsService).getM3U8CloudFrontUrl(member1.getLoginId());
+		given(memberChannelRepository.findById(channelId)).willReturn(Mono.empty());
+
+		StepVerifier.create(memberChannelService.getChannelDetail(channelId))
+			.verifyError(NoExistChannelException.class);
 	}
+
+
+	@Test
+	void getChannelDetailsThrowsoffAirBroadCastException(){
+		MemberChannel memberChannel1 = MemberChannel.builder().id(1L).title("안녕하세요").memberId(1L).totalStreaming(0).startedAt(null)
+			.onAir(false).build();
+
+		Long channelId = 1L;
+
+		given(memberChannelRepository.findById(channelId)).willReturn(Mono.just(memberChannel1));
+
+		StepVerifier.create(memberChannelService.getChannelDetail(channelId))
+			.verifyError(OffAirBroadCastException.class);
+	}
+
 
 	// @Test
 	// void convertToMemberChannelResponseDtoSuccessTest(){

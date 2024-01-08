@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.hanghae.lemonairservice.dto.member.LoginRequestDto;
@@ -15,6 +16,16 @@ import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
 import com.hanghae.lemonairservice.entity.Point;
+import com.hanghae.lemonairservice.exception.member.AlreadyExistEmailException;
+import com.hanghae.lemonairservice.exception.member.AlreadyExistIdException;
+import com.hanghae.lemonairservice.exception.member.AlreadyExistNicknameException;
+import com.hanghae.lemonairservice.exception.member.FailedToCreateChannelException;
+import com.hanghae.lemonairservice.exception.member.FailedToCreatePointException;
+import com.hanghae.lemonairservice.exception.member.FailedToSigninIdException;
+import com.hanghae.lemonairservice.exception.member.FailedToSigninPasswordException;
+import com.hanghae.lemonairservice.exception.member.NotEqualPasswordException;
+import com.hanghae.lemonairservice.exception.member.PasswordFormException;
+import com.hanghae.lemonairservice.exception.member.SignupFailedException;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
@@ -59,6 +70,7 @@ public class MemberServiceTest {
 
 		MemberChannel memberChannel = MemberChannel.builder().title("kangminbeom").onAir(false).totalStreaming(0).memberId(member.getId())
 			.build();
+
 		given(memberRepository.existsByEmail(signUpRequestDto.getEmail())).willReturn(Mono.just(false));
 		given(memberRepository.existsByNickname(signUpRequestDto.getNickname())).willReturn(Mono.just(false));
 		given(memberRepository.existsByLoginId(signUpRequestDto.getLoginId())).willReturn(Mono.just(false));
@@ -78,38 +90,115 @@ public class MemberServiceTest {
 		verify(memberRepository.save(Mockito.any(Member.class)));
 		verify(memberChannelRepository.save(Mockito.any(MemberChannel.class)));
 		verify(pointRepository.save(Mockito.any(Point.class)));
+	}
 
 
-			// .expectNextMatches(signup -> {
-			//
-			// 	return signup.getStatusCode() == signup.ok() && signup.getBody() != null;
-			// })
+	@Test
+	void SignUpThrowsPasswordFormException(){
+		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("12")
+			.password2("12").loginId("kangminbeom").nickname("kangminbeom").build();
+
+		StepVerifier.create(memberService.signup(signUpRequestDto))
+			.verifyError(PasswordFormException.class);
+
 	}
 
 	@Test
-	void SignUpFailTest(){
-		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("kangminbeom1!")
-			.password2("kangminbeom1!").loginId("kangminbeom").nickname("kangminbeom").build();
-
-		Member member = Member.builder().email("kangminbeom@gmail.com").password(passwordEncoder.encode("kangminbeom1!"))
-			.loginId("kangminbeom").nickname("kangminbeom").streamKey("1234").build();
-
-		MemberChannel memberChannel = MemberChannel.builder().title("kangminbeom").onAir(false).totalStreaming(0).memberId(member.getId())
-			.build();
-
-		given(memberRepository.existsByEmail(signUpRequestDto.getEmail())).willReturn(Mono.just(false));
-		given(memberRepository.existsByNickname(signUpRequestDto.getNickname())).willReturn(Mono.just(false));
-		given(memberRepository.existsByLoginId(signUpRequestDto.getLoginId())).willReturn(Mono.just(false));
-		given(memberRepository.save(Mockito.any(Member.class))).willReturn(Mono.just(member));
-
-		given(memberChannelRepository.save(Mockito.any(MemberChannel.class))).willReturn(Mono.just(memberChannel));
-		given(pointRepository.save(Mockito.any(Point.class))).willReturn(Mono.just(new Point(member)));
+	void SignUpThrowsNotEqualPasswordException(){
+		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("Kangminbeom1@")
+			.password2("Kangminbeom1!").loginId("kangminbeom").nickname("kangminbeom").build();
 
 		StepVerifier.create(memberService.signup(signUpRequestDto))
-			.expectNextMatches(signup ->{
-				return signup.getStatusCode().is2xxSuccessful() && signup.getBody() != null;
-			}).verifyComplete();
+			.verifyError(NotEqualPasswordException.class);
 	}
+
+	@Test
+	void SignUpThrowsAlreadyExistEmailException(){
+		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("Kangminbeom1!")
+			.password2("Kangminbeom1!").loginId("kangminbeom").nickname("kangminbeom").build();
+
+		given(memberRepository.existsByEmail(signUpRequestDto.getEmail())).willReturn(Mono.just(true));
+		given(memberRepository.existsByLoginId(signUpRequestDto.getLoginId())).willReturn(Mono.just(false));
+		given(memberRepository.existsByNickname(signUpRequestDto.getNickname())).willReturn(Mono.just(false));
+		StepVerifier.create(memberService.signup(signUpRequestDto))
+			.verifyError(AlreadyExistEmailException.class);
+	}
+
+	@Test
+	void SignUpThrowsAlreadyExistIdException(){
+		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("Kangminbeom1!")
+			.password2("Kangminbeom1!").loginId("kangminbeom").nickname("kangminbeom").build();
+
+		given(memberRepository.existsByEmail(signUpRequestDto.getEmail())).willReturn(Mono.just(false));
+		given(memberRepository.existsByLoginId(signUpRequestDto.getLoginId())).willReturn(Mono.just(true));
+		given(memberRepository.existsByNickname(signUpRequestDto.getNickname())).willReturn(Mono.just(false));
+		StepVerifier.create(memberService.signup(signUpRequestDto))
+			.verifyError(AlreadyExistIdException.class);
+	}
+
+	@Test
+	void SignUpThrowsAlreadyExistNicknameException(){
+		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("Kangminbeom1!")
+			.password2("Kangminbeom1!").loginId("kangminbeom").nickname("kangminbeom").build();
+
+		given(memberRepository.existsByEmail(signUpRequestDto.getEmail())).willReturn(Mono.just(false));
+		given(memberRepository.existsByLoginId(signUpRequestDto.getLoginId())).willReturn(Mono.just(false));
+		given(memberRepository.existsByNickname(signUpRequestDto.getNickname())).willReturn(Mono.just(true));
+		StepVerifier.create(memberService.signup(signUpRequestDto))
+			.verifyError(AlreadyExistNicknameException.class);
+	}
+
+	@Test
+	void SignUpThrowsSignupFailedException(){
+		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("Kangminbeom1!")
+			.password2("Kangminbeom1!").loginId("kangminbeom").nickname("kangminbeom").build();
+
+		given(memberRepository.existsByEmail(signUpRequestDto.getEmail())).willReturn(Mono.just(false));
+		given(memberRepository.existsByLoginId(signUpRequestDto.getLoginId())).willReturn(Mono.just(false));
+		given(memberRepository.existsByNickname(signUpRequestDto.getNickname())).willReturn(Mono.just(false));
+		given(memberRepository.save(Mockito.any(Member.class))).willReturn(Mono.error(new SignupFailedException()));
+		StepVerifier.create(memberService.signup(signUpRequestDto))
+			.verifyError(SignupFailedException.class);
+	}
+
+	@Test
+	void FailedToCreateChannelException(){
+		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("Kangminbeom1!")
+			.password2("Kangminbeom1!").loginId("kangminbeom").nickname("kangminbeom").build();
+
+		Member member1 = Member.builder().id(1L).build();
+
+		Point point1 = Point.builder().id(1L).build();
+		given(memberRepository.existsByEmail(signUpRequestDto.getEmail())).willReturn(Mono.just(false));
+		given(memberRepository.existsByLoginId(signUpRequestDto.getLoginId())).willReturn(Mono.just(false));
+		given(memberRepository.existsByNickname(signUpRequestDto.getNickname())).willReturn(Mono.just(false));
+		given(memberRepository.save(Mockito.any(Member.class))).willReturn(Mono.just(member1));
+		given(memberChannelRepository.save(Mockito.any(MemberChannel.class))).willReturn(Mono.error(new FailedToCreateChannelException()));
+		given(pointRepository.save(Mockito.any(Point.class))).willReturn(Mono.just(point1));
+		StepVerifier.create(memberService.signup(signUpRequestDto))
+			.verifyError(FailedToCreateChannelException.class);
+	}
+
+	@Test
+	void FailedToCreatePointException(){
+		SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder().email("kangminbeom@gmail.com").password("Kangminbeom1!")
+			.password2("Kangminbeom1!").loginId("kangminbeom").nickname("kangminbeom").build();
+
+		Member member1 = Member.builder().id(1L).build();
+
+		MemberChannel memberChannel1 = MemberChannel.builder().id(1L).build();
+
+		given(memberRepository.existsByEmail(signUpRequestDto.getEmail())).willReturn(Mono.just(false));
+		given(memberRepository.existsByLoginId(signUpRequestDto.getLoginId())).willReturn(Mono.just(false));
+		given(memberRepository.existsByNickname(signUpRequestDto.getNickname())).willReturn(Mono.just(false));
+		given(memberRepository.save(Mockito.any(Member.class))).willReturn(Mono.just(member1));
+		given(memberChannelRepository.save(Mockito.any(MemberChannel.class))).willReturn(Mono.just(memberChannel1));
+		given(pointRepository.save(Mockito.any(Point.class))).willReturn(Mono.error(new FailedToCreatePointException()));
+		StepVerifier.create(memberService.signup(signUpRequestDto))
+			.verifyError(FailedToCreatePointException.class);
+	}
+
+
 
 	@Test
 	void LoginSuccessTest(){
@@ -130,30 +219,34 @@ public class MemberServiceTest {
 				return user.getBody() != null && user.getBody().getAccessToken().equals(accessToken) &&
 					user.getBody().getRefreshToken().equals(refreshToken);
 			}).verifyComplete();
-		//
-		// verify(memberRepository.findByLoginId(loginRequestDto.getLoginId()));
-		// verify(jwtUtil.createAccessToken(member.getLoginId(),member.getNickname()));
-		// verify(refreshTokenRepository.saveRefreshToken(member.getLoginId(),accessToken));
-		// verify(passwordEncoder.matches(loginRequestDto.getPassword(),member.getPassword()));
-		// verify(jwtUtil.createRefreshToken(member.getLoginId(),member.getNickname()));
+
 	}
 
 	@Test
-	void passwordErrorTest(){
-		LoginRequestDto loginRequestDto = LoginRequestDto.builder().loginId("kangminbeom").password("Kangminbeom1!@").build();
-		Member member1 = Member.builder().email("kangminbeom@gmail.com").password(passwordEncoder.encode("Kangminbeom1!"))
+	void LoginThrowsFailedToSigninPasswordException(){
+		Member member = Member.builder().email("kangminbeom@gmail.com").password(passwordEncoder.encode("Kangminbeom1!"))
 			.loginId("kangminbeom").nickname("kangminbeom").streamKey("1234").build();
 
-		given(memberRepository.findByLoginId(loginRequestDto.getLoginId())).willReturn(Mono.just(member1));
-		given(passwordEncoder.matches(loginRequestDto.getPassword(),"Kangminbeom1!")).willReturn(true);
+		LoginRequestDto loginRequestDto = LoginRequestDto.builder().loginId("kangminbeom").password("Kangminbeom1!").build();
+		given(memberRepository.findByLoginId(loginRequestDto.getLoginId())).willReturn(Mono.just(member));
+		given(passwordEncoder.matches(loginRequestDto.getPassword(),member.getPassword())).willReturn(false);
 
 		StepVerifier.create(memberService.login(loginRequestDto))
-			.expectErrorMatches(throwable -> throwable instanceof NullPointerException &&
-				throwable.getMessage().equals("비밀번호가 잘못되었습니다."));
-
-		verify(memberRepository).findByLoginId(loginRequestDto.getLoginId());
-		verify(passwordEncoder).matches(loginRequestDto.getPassword(),"Kangminbeom1!");
+			.verifyError(FailedToSigninPasswordException.class);
 	}
+
+	@Test
+	void LoginThrowsFailedToSigninIdException(){
+		Member member = Member.builder().email("kangminbeom@gmail.com").password(passwordEncoder.encode("Kangminbeom1!"))
+			.loginId("kangminbeom").nickname("kangminbeom").streamKey("1234").build();
+
+		LoginRequestDto loginRequestDto = LoginRequestDto.builder().loginId("kangminbeom").password("Kangminbeom1!").build();
+		given(memberRepository.findByLoginId(loginRequestDto.getLoginId())).willReturn(Mono.empty());
+
+		StepVerifier.create(memberService.login(loginRequestDto))
+			.verifyError(FailedToSigninIdException.class);
+	}
+
 
 	@Test
 	void Logout(){

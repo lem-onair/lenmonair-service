@@ -17,6 +17,16 @@ import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
 import com.hanghae.lemonairservice.entity.Point;
+import com.hanghae.lemonairservice.exception.member.AlreadyExistEmailException;
+import com.hanghae.lemonairservice.exception.member.AlreadyExistIdException;
+import com.hanghae.lemonairservice.exception.member.AlreadyExistNicknameException;
+import com.hanghae.lemonairservice.exception.member.FailedToCreateChannelException;
+import com.hanghae.lemonairservice.exception.member.FailedToCreatePointException;
+import com.hanghae.lemonairservice.exception.member.FailedToSigninIdException;
+import com.hanghae.lemonairservice.exception.member.FailedToSigninPasswordException;
+import com.hanghae.lemonairservice.exception.member.NotEqualPasswordException;
+import com.hanghae.lemonairservice.exception.member.PasswordFormException;
+import com.hanghae.lemonairservice.exception.member.SignupFailedException;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
@@ -50,12 +60,11 @@ public class MemberService {
 	public Mono<ResponseEntity<SignUpResponseDto>> signup(SignUpRequestDto signupRequestDto) {
 
 		if (!validatePassword(signupRequestDto.getPassword())) {
-			return Mono.error(
-				new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호는 최소 8자 이상, 대소문자, 숫자, 특수문자를 포함해야 합니다."));
+			return Mono.error(new PasswordFormException());
 		}
 
 		if (!signupRequestDto.getPassword().equals(signupRequestDto.getPassword2())) {
-			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."));
+			return Mono.error(new NotEqualPasswordException());
 		}
 
 		Mono<Boolean> emailExists = memberRepository.existsByEmail(signupRequestDto.getEmail());
@@ -69,26 +78,23 @@ public class MemberService {
 			boolean useridExistsValue = nestedTuple.getT2();
 
 			if (emailExistsValue) {
-				return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 이메일은 이미 사용 중입니다."));
+				return Mono.error(new AlreadyExistEmailException());
 			} else if (useridExistsValue) {
-				return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아이디는 이미 사용 중입니다."));
+				return Mono.error(new AlreadyExistIdException());
 			} else if (nicknameExistsValue) {
-				return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 닉네임은 이미 사용 중입니다."));
+				return Mono.error(new AlreadyExistNicknameException());
 			} else {
 				String streamKey = UUID.randomUUID().toString();
 				Mono<Member> monomember = memberRepository.save(
 						new Member(signupRequestDto.getEmail(), passwordEncoder.encode(signupRequestDto.getPassword()),
 							signupRequestDto.getLoginId(), signupRequestDto.getNickname(), streamKey))
-					.onErrorResume(throwable -> Mono.error(
-						new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")));
+					.onErrorResume(throwable -> Mono.error(new SignupFailedException()));
 				return monomember.flatMap(membermono -> {
 					Mono<MemberChannel> monochannel = memberChannelRepository.save(new MemberChannel(membermono))
-						.onErrorResume(throwable -> Mono.error(
-							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채널 생성에 실패했습니다.")));
+						.onErrorResume(throwable -> Mono.error(new FailedToCreateChannelException()));
 
 					Mono<Point> monopoint = pointRepository.save(new Point(membermono))
-						.onErrorResume(throwable -> Mono.error(
-							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "포인트 생성에 실패했습니다.")));
+						.onErrorResume(throwable -> Mono.error(new FailedToCreatePointException()));
 
 					return Mono.zip(monochannel, monopoint).thenReturn(membermono);
 				}).thenReturn(ResponseEntity.ok(new SignUpResponseDto(streamKey)));
@@ -107,9 +113,9 @@ public class MemberService {
 									ResponseEntity.ok().body(new LoginResponseDto(accessToken, refreshToken)))));
 
 			} else {
-				return Mono.error(new RuntimeException("비밀번호가 잘못되었습니다."));
+				return Mono.error(new FailedToSigninPasswordException());
 			}
-		}).switchIfEmpty(Mono.error(new RuntimeException("아이디가 잘못되었습니다.")));
+		}).switchIfEmpty(Mono.error(new FailedToSigninIdException()));
 	}
 
 	public Mono<ResponseEntity<String>> logout(String loginId) {

@@ -5,12 +5,13 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.kms.model.NotFoundException;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelDetailResponseDto;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
+import com.hanghae.lemonairservice.exception.channel.NoExistChannelException;
 import com.hanghae.lemonairservice.exception.channel.NoOnAirChannelException;
+import com.hanghae.lemonairservice.exception.channel.OffAirBroadCastException;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 
@@ -46,9 +47,9 @@ public class MemberChannelService {
 
 	public Mono<ResponseEntity<MemberChannelDetailResponseDto>> getChannelDetail(Long channelId) {
 		return memberChannelRepository.findById(channelId)
-			.switchIfEmpty(Mono.error(new RuntimeException("해당 방송이 존재하지 않습니다.")))
+			.switchIfEmpty(Mono.error(new NoExistChannelException()))
 			.filter(MemberChannel::getOnAir)
-			.switchIfEmpty(Mono.error(new RuntimeException("해당 방송은 종료되었습니다.")))
+			.switchIfEmpty(Mono.error(new OffAirBroadCastException()))
 			.flatMap(this::convertToMemberChannelDetailResponseDto)
 			.map(ResponseEntity::ok);
 	}

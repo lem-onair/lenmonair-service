@@ -17,6 +17,11 @@ import com.hanghae.lemonairservice.dto.point.PointResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.Point;
 import com.hanghae.lemonairservice.entity.PointLog;
+import com.hanghae.lemonairservice.exception.point.FailedAddPointException;
+import com.hanghae.lemonairservice.exception.point.NoDonationLogException;
+import com.hanghae.lemonairservice.exception.point.NoPointException;
+import com.hanghae.lemonairservice.exception.point.NotExistUserException;
+import com.hanghae.lemonairservice.exception.point.NotUsepointToSelfException;
 import com.hanghae.lemonairservice.repository.PointLogRepository;
 import com.hanghae.lemonairservice.repository.PointRepository;
 
@@ -34,11 +39,10 @@ public class PointService {
 
 	public Mono<ResponseEntity<PointResponseDto>> addpoint(AddPointRequestDto addPointRequestDto, Member member) {
 		return pointRepository.findByMemberId(member.getId()).log()
-			.switchIfEmpty(Mono.error(new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다.")))
-			.flatMap(point -> pointRepository.save(point.addPoint(addPointRequestDto.getPoint())).log()
-				.onErrorResume(exception -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,"point 추가 오류")))
-				.map(savedPoint -> ResponseEntity.ok().body(new PointResponseDto(member, point.getPoint())))).log();
+			.switchIfEmpty(Mono.error(new NotExistUserException()))
+			.flatMap(point -> pointRepository.save(point.addPoint(addPointRequestDto.getPoint()))
+				.onErrorResume(exception -> Mono.error(new FailedAddPointException()))
+				.map(savedPoint -> ResponseEntity.ok().body(new PointResponseDto(member, point.getPoint()))));
 	}
 
 	@Transactional
@@ -46,13 +50,13 @@ public class PointService {
 		return pointRepository.findById(member.getId())
 			.flatMap(donater -> {
 				if (Objects.equals(streamerId, donater.getId())) {
-					return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "본인 방송에 후원하실 수 없습니다."));
+					return Mono.error(() -> new NotUsepointToSelfException());
 				}
 				if (donater.getPoint() <= 0) {
-					return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
+					return Mono.error(() -> new NoPointException());
 				}
 				if (donater.getPoint() - donationRequestDto.getDonatePoint() < 0) {
-					return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
+					return Mono.error(() -> new NoPointException());
 				}
 				return pointRepository.save(donater.usePoint(donationRequestDto.getDonatePoint()))
 					.flatMap(savedPoint -> pointRepository.findById(streamerId))
@@ -83,13 +87,10 @@ public class PointService {
 			.collectList()
 			.flatMap(donationRankDto -> {
 				if (donationRankDto == null || donationRankDto.isEmpty()) {
-					return Mono.error(new ResponseStatusException(
-						HttpStatus.BAD_REQUEST, "후원받은 레몬이 없습니다."));
+					return Mono.error(new NoDonationLogException());
 				} else {
 					return Mono.just(ResponseEntity.ok(Flux.fromIterable(donationRankDto)));
 				}
 			});
-			// .switchIfEmpty(Mono.error(new ResponseStatusException(
-			// 	HttpStatus.BAD_REQUEST, "후원받은 레몬이 없습니다.")));
 	}
 }

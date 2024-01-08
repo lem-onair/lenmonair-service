@@ -48,7 +48,7 @@ public class RefreshTokenServiceTest {
 	}
 
 	@Test
-	void refreshFailedTest(){
+	void refreshThrowsNotvaildTokenException(){
 		RefreshRequestDto refreshRequestDto = RefreshRequestDto.builder().refreshToken("1234").build();
 		JwtTokenSubjectDto jwtTokenSubjectDto = JwtTokenSubjectDto.builder().loginId("kangminbeom").nickname("minbeom").build();
 		System.out.println("loginId: " + jwtTokenSubjectDto.getLoginId());

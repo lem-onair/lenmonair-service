@@ -15,6 +15,10 @@ import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import com.hanghae.lemonairservice.dto.stream.StreamKeyRequestDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
+import com.hanghae.lemonairservice.exception.stream.NoStartedAtLogException;
+import com.hanghae.lemonairservice.exception.stream.NotEqualsStreamKeysException;
+import com.hanghae.lemonairservice.exception.stream.NotExistsChannelException;
+import com.hanghae.lemonairservice.exception.stream.NotExistsIdException;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 
@@ -49,16 +53,14 @@ public class StreamingServiceTest {
 	}
 
 	@Test
-	void checkStreamValidityFailedTest(){
+	void checkStreamValidityNotEqualsStreamKeysException(){
 		String streamerId = "kangminbeom";
 		StreamKeyRequestDto streamKeyRequestDto = StreamKeyRequestDto.builder().streamKey("1234").build();
 		Member member1 = Member.builder().loginId("kangminbeom").streamKey("12345").build();
 		given(memberRepository.findByLoginId(streamerId)).willReturn(Mono.just(member1));
 
 		StepVerifier.create(streamService.checkStreamValidity(streamerId,streamKeyRequestDto))
-			.expectErrorMatches(streamkey -> streamkey instanceof RuntimeException &&
-				streamkey.getMessage().contains("스트림 키가 일치하지 않습니다.")).verify();
-		verify(memberRepository).findByLoginId(streamerId);
+			.verifyError(NotEqualsStreamKeysException.class);
 	}
 
 	@Test
@@ -83,20 +85,16 @@ public class StreamingServiceTest {
 
 
 	@Test
-	void StartStreamFailedTest1(){
+	void StartStreamThrowsNotExistsIdException(){
 		String streamerId = "kangminbeom";
 
 		given(memberRepository.findByLoginId(streamerId)).willReturn(Mono.empty());
 		StepVerifier.create(streamService.startStream(streamerId))
-			.expectErrorMatches(stream -> stream instanceof RuntimeException &&
-				stream.getMessage().contains("방송시작요청 멤버조회실패 kangminbeom는 가입되지 않은 아이디입니다.")
-				).verify();
-
-		verify(memberRepository).findByLoginId(streamerId);
+			.verifyError(NotExistsIdException.class);
 	}
 
 	@Test
-	void StartStreamFailedTest2(){
+	void StartStreamThrowsNotExistsChannelException(){
 		String streamerId = "kangminbeom";
 		Member member1 = Member.builder().id(1L).loginId("kangminbeom").streamKey("12345").build();
 
@@ -104,12 +102,7 @@ public class StreamingServiceTest {
 		given(memberChannelRepository.findByMemberId(member1.getId())).willReturn(Mono.empty());
 
 		StepVerifier.create(streamService.startStream(streamerId))
-			.expectErrorMatches(stream -> stream instanceof RuntimeException &&
-				stream.getMessage().contains("해당 멤버의 채널이 존재하지 않습니다.")
-			).verify();
-
-		verify(memberRepository).findByLoginId(streamerId);
-		verify(memberChannelRepository).findByMemberId(member1.getId());
+			.verifyError(NotExistsChannelException.class);
 	}
 
 	@Test
@@ -132,20 +125,17 @@ public class StreamingServiceTest {
 	}
 
 	@Test
-	void stopStreamFailedTest1(){
+	void stopStreamThrowsNotExistsIdException() {
 		String streamerId = "kangminbeom";
 
 		given(memberRepository.findByLoginId(streamerId)).willReturn(Mono.empty());
 
 		StepVerifier.create(streamService.stopStream(streamerId))
-			.expectErrorMatches(stop -> stop instanceof RuntimeException &&
-				stop.getMessage().contains("방송종료 요청 멤버조회실패 kangminbeom는 가입되지 않은 아이디입니다.")).verify();
-
-		verify(memberRepository).findByLoginId(streamerId);
+			.verifyError(NotExistsIdException.class);
 	}
 
 	@Test
-	void stopStreamFailedTest2(){
+	void stopStreamThrowsNotExistsChannelException(){
 		String streamerId = "kangminbeom";
 		Member member1 = Member.builder().id(1L).loginId("kangminbeom").streamKey("12345").build();
 
@@ -153,15 +143,11 @@ public class StreamingServiceTest {
 		given(memberChannelRepository.findByMemberId(member1.getId())).willReturn(Mono.empty());
 
 		StepVerifier.create(streamService.stopStream(streamerId))
-			.expectErrorMatches(stop -> stop instanceof RuntimeException &&
-				stop.getMessage().contains("해당 멤버의 채널이 존재하지 않습니다.")).verify();
-
-		verify(memberRepository).findByLoginId(streamerId);
-		verify(memberChannelRepository).findByMemberId(member1.getId());
+			.verifyError(NotExistsChannelException.class);
 	}
 
 	@Test
-	void stopStreamFailedTest3(){
+	void stopStreamNoStartedAtLogException(){
 		String streamerId = "kangminbeom";
 		Member member1 = Member.builder().id(1L).loginId("kangminbeom").streamKey("12345").build();
 		MemberChannel memberChannel1 = MemberChannel.builder().startedAt(null).build();
@@ -170,10 +156,7 @@ public class StreamingServiceTest {
 		given(memberChannelRepository.findByMemberId(member1.getId())).willReturn(Mono.just(memberChannel1));
 
 		StepVerifier.create(streamService.stopStream(streamerId))
-			.expectErrorMatches(stop -> stop instanceof RuntimeException &&
-				stop.getMessage().contains("시작되지 않은 방송입니다.")).verify();
-
-		verify(memberRepository).findByLoginId(streamerId);
-		verify(memberChannelRepository).findByMemberId(member1.getId());
+			.verifyError(NoStartedAtLogException.class);
 	}
+
 }

@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +20,10 @@ import com.hanghae.lemonairservice.dto.point.DonationRequestDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.Point;
 import com.hanghae.lemonairservice.entity.PointLog;
+import com.hanghae.lemonairservice.exception.point.FailedAddPointException;
+import com.hanghae.lemonairservice.exception.point.NoDonationLogException;
+import com.hanghae.lemonairservice.exception.point.NoPointException;
+import com.hanghae.lemonairservice.exception.point.NotExistUserException;
 import com.hanghae.lemonairservice.repository.PointLogRepository;
 import com.hanghae.lemonairservice.repository.PointRepository;
 
@@ -40,7 +43,7 @@ public class PointServiceTest {
 	PointLogRepository pointLogRepository;
 
 	@Test
-	void addPoint(){
+	void addPointSuccessTest(){
 		Member member1 = Member.builder().id(1L).email("kangminbeom@gmail.com").password("Rkdalsqja1!")
 			.loginId("kangminbeom").nickname("kangminbeom").streamKey("1234").build();
 		Point point1 = Point.builder().id(1L).memberId(1L).nickname("kangminbeom").point(0).build();
@@ -58,6 +61,32 @@ public class PointServiceTest {
 
 		verify(pointRepository).findByMemberId(member1.getId());
 		verify(pointRepository).save(point1.addPoint(addPointRequestDto1.getPoint()));
+	}
+
+	@Test
+	void addPointThrowsNotExistUserException(){
+		Member member1 = Member.builder().id(1L).email("kangminbeom@gmail.com").password("Rkdalsqja1!")
+			.loginId("kangminbeom").nickname("kangminbeom").streamKey("1234").build();
+		AddPointRequestDto addPointRequestDto1 = AddPointRequestDto.builder().point(50).build();
+
+		given(pointRepository.findByMemberId(member1.getId())).willReturn(Mono.empty());
+
+		StepVerifier.create(pointService.addpoint(addPointRequestDto1,member1))
+			.verifyError(NotExistUserException.class);
+	}
+
+	@Test
+	void addPointThrowsFailedAddPointException(){
+		Member member1 = Member.builder().id(1L).email("kangminbeom@gmail.com").password("Rkdalsqja1!")
+			.loginId("kangminbeom").nickname("kangminbeom").streamKey("1234").build();
+		Point point1 = Point.builder().id(1L).memberId(1L).nickname("kangminbeom").point(0).build();
+		AddPointRequestDto addPointRequestDto1 = AddPointRequestDto.builder().point(0).build();
+
+		given(pointRepository.findByMemberId(member1.getId())).willReturn(Mono.just(point1));
+		given(pointRepository.save(point1.addPoint(addPointRequestDto1.getPoint()))).willReturn(Mono.error(new FailedAddPointException()));
+
+		StepVerifier.create(pointService.addpoint(addPointRequestDto1,member1))
+			.verifyError(FailedAddPointException.class);
 	}
 
 	@Test
@@ -112,7 +141,7 @@ public class PointServiceTest {
 	}
 
 	@Test
-	void usePointFailedTest2(){
+	void usePointThrowsNotUsepointToSelfException(){
 		DonationRequestDto donationRequestDto1 = DonationRequestDto.builder().donatePoint(100).contents("힘내세요").build();
 		Member member2 = Member.builder().id(2L).email("kangminbeom1@gmail.com").password("Rkdalsqja1!")
 			.loginId("kangminbeom1").nickname("kangminbeom1").streamKey("12345").build();
@@ -129,6 +158,23 @@ public class PointServiceTest {
 		verify(pointLogRepository,never()).save(any());
 	}
 
+	@Test
+	void usePointThrowsNoPointException(){
+		DonationRequestDto donationRequestDto1 = DonationRequestDto.builder().donatePoint(100).contents("힘내세요").build();
+
+		Member member1 = Member.builder().id(1L).email("kangminbeom@gmail.com").password("Rkdalsqja1!")
+			.loginId("kangminbeom").nickname("kangminbeom").streamKey("1234").build();
+
+		Member member2 = Member.builder().id(2L).email("kangminbeom1@gmail.com").password("Rkdalsqja1!")
+			.loginId("kangminbeom1").nickname("kangminbeom1").streamKey("12345").build();
+
+		Point point2 = Point.builder().id(2L).memberId(2L).nickname("kangminbeom1").point(0).build();
+
+		given(pointRepository.findById(member2.getId())).willReturn(Mono.just(point2));
+
+		StepVerifier.create(pointService.usePoint(donationRequestDto1,member2,member1.getId()))
+				.verifyError(NoPointException.class);
+		}
 
 	@Test
 	void donationRankSuccessTest(){
@@ -179,13 +225,7 @@ public class PointServiceTest {
 		given(pointLogRepository.findByStreamerIdOrderBySumOfDonateLimit10(member1.getId())).willReturn(Flux.empty());
 
 		StepVerifier.create(pointService.donationRank(member1))
-			.expectErrorMatches(rank ->
-				rank instanceof ResponseStatusException &&
-				((ResponseStatusException)rank).getStatusCode() == HttpStatus.BAD_REQUEST &&
-				rank.getMessage().contains("후원받은 레몬이 없습니다."))
-			.verify();
-
-		verify(pointLogRepository).findByStreamerIdOrderBySumOfDonateLimit10(member1.getId());
+			.verifyError(NoDonationLogException.class);
 	}
 
 
