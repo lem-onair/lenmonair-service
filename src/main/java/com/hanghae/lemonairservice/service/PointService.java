@@ -32,6 +32,14 @@ public class PointService {
 	private final PointRepository pointRepository;
 	private final PointLogRepository pointLogRepository;
 
+
+	public Mono<ResponseEntity<PointResponseDto>> getPoint(Member member) {
+		log.info("member.getId() : " + member.getId());
+		return pointRepository.findByMemberId(member.getId())
+			.map(point -> ResponseEntity.ok().body(new PointResponseDto(member, point.getPoint())))
+			.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "존재하지 않는 유저입니다.")));
+	}
+
 	public Mono<ResponseEntity<PointResponseDto>> addpoint(AddPointRequestDto addPointRequestDto, Member member) {
 		return pointRepository.findByMemberId(member.getId())
 			.log()
@@ -47,7 +55,7 @@ public class PointService {
 	@Transactional
 	public Mono<ResponseEntity<DonationResponseDto>> usePoint(DonationRequestDto donationRequestDto, Member member,
 		Long streamerId) {
-		return pointRepository.findById(member.getId()).flatMap(donater -> {
+		return pointRepository.findByMemberId(member.getId()).flatMap(donater -> {
 			if (Objects.equals(streamerId, donater.getId())) {
 				return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "본인 방송에 후원하실 수 없습니다."));
 			}
@@ -58,7 +66,7 @@ public class PointService {
 				return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
 			}
 			return pointRepository.save(donater.usePoint(donationRequestDto.getDonatePoint()))
-				.flatMap(savedPoint -> pointRepository.findById(streamerId))
+				.flatMap(savedPoint -> pointRepository.findByMemberId(streamerId))
 				.log()
 				.flatMap(savedstreamerPoint -> {
 					Point streamerPoint = savedstreamerPoint.addPoint(donationRequestDto.getDonatePoint());
@@ -82,4 +90,6 @@ public class PointService {
 
 		return Mono.just(ResponseEntity.ok(donationRankDto));
 	}
+
+
 }
