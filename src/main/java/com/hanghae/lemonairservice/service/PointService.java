@@ -37,12 +37,10 @@ public class PointService {
 	private final PointLogRepository pointLogRepository;
 	private final RedissonClient redissonClient;
 
-	private static final int WAIT_TIME = 5;
-	private static final int LEASE_TIME = 1;
-	// private static final String SEAT_LOCK = "seat_lock";
-	// String lockKey = "LOCK" + member.getId();
+	private static final int WAIT_TIME = 5
+		;
+	private static final int LEASE_TIME = 2;
 
-	private final DatabaseClient databaseClient;
 
 	public Mono<ResponseEntity<PointResponseDto>> addpoint(AddPointRequestDto addPointRequestDto, Member member) {
 		return pointRepository.findById(member.getId())
@@ -53,7 +51,6 @@ public class PointService {
 				.map(savedPoint -> ResponseEntity.ok().body(new PointResponseDto(member, point.getPoint()))));
 	}
 
-	// @Transactional
 	public Mono<ResponseEntity<DonationResponseDto>> usePoint(DonationRequestDto donationRequestDto, Member member, Long streamerId) {
 		String lockKey = "LOCK" + member.getId();
 		RLock lock = redissonClient.getLock(lockKey);
@@ -106,39 +103,7 @@ public class PointService {
 				log.info(Thread.currentThread()+"lock 반납");
 			}
 		}
-	// 	return pointRepository.findById(member.getId())
-	// 		.flatMap(donater -> {
-	// 			if (Objects.equals(streamerId, donater.getId())) {
-	// 				return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "본인 방송에 후원하실 수 없습니다."));
-	// 			}
-	// 			if (donater.getPoint() <= 0) {
-	// 				return Mono.error(
-	// 					() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
-	// 			}
-	// 			if (donater.getPoint() - donationRequestDto.getDonatePoint() < 0) {
-	// 				return Mono.error(
-	// 					() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
-	// 			}
-	//
-	// 			return pointRepository.save(donater.usePoint(donationRequestDto.getDonatePoint()))
-	// 				.flatMap(savedPoint -> pointRepository.findById(streamerId))
-	// 				.log()
-	// 				.flatMap(savedstreamerPoint -> {
-	// 					Point streamerPoint = savedstreamerPoint.addPoint(donationRequestDto.getDonatePoint());
-	// 					return pointRepository.save(streamerPoint)
-	// 						.flatMap(updatepoint -> pointLogRepository.save(
-	// 							new PointLog(member, donationRequestDto, LocalDateTime.now(), streamerId)));
-	// 				}).log()
-	// 				.flatMap(updatepoint -> Mono.just(ResponseEntity.ok(new DonationResponseDto(
-	// 					member.getId(),
-	// 					member.getNickname(),
-	// 					streamerId,
-	// 					donationRequestDto.getContents(),
-	// 					donater.getPoint(),
-	// 					LocalDateTime.now().toString()
-	// 				)))).log();
-	// 		});
-	// }
+
 
 	public Mono<ResponseEntity<Flux<DonationRankingDto>>> donationRank(Member member) {
 		Flux<DonationRankingDto> donationRankDto = pointLogRepository.findByStreamerIdOrderBySumOfDonateLimit10(member.getId())
