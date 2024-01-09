@@ -1,12 +1,15 @@
 package com.hanghae.lemonairservice.service;
 
+import com.hanghae.lemonairservice.dto.point.DonationWebClientDto;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.hanghae.lemonairservice.dto.point.AddPointRequestDto;
@@ -15,8 +18,6 @@ import com.hanghae.lemonairservice.dto.point.DonationRequestDto;
 import com.hanghae.lemonairservice.dto.point.DonationResponseDto;
 import com.hanghae.lemonairservice.dto.point.PointResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
-import com.hanghae.lemonairservice.entity.Point;
-import com.hanghae.lemonairservice.entity.PointLog;
 import com.hanghae.lemonairservice.repository.PointLogRepository;
 import com.hanghae.lemonairservice.repository.PointRepository;
 
@@ -31,6 +32,9 @@ import reactor.core.publisher.Mono;
 public class PointService {
 	private final PointRepository pointRepository;
 	private final PointLogRepository pointLogRepository;
+
+	@Autowired
+	private WebClient.Builder webClientBuilder;
 
 
 	public Mono<ResponseEntity<PointResponseDto>> getPoint(Member member) {
@@ -53,33 +57,39 @@ public class PointService {
 	}
 
 	@Transactional
-	public Mono<ResponseEntity<DonationResponseDto>> usePoint(DonationRequestDto donationRequestDto, Member member,
-		Long streamerId) {
-		return pointRepository.findByMemberId(member.getId()).flatMap(donater -> {
-			if (Objects.equals(streamerId, donater.getId())) {
-				return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "본인 방송에 후원하실 수 없습니다."));
-			}
-			if (donater.getPoint() <= 0) {
-				return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
-			}
-			if (donater.getPoint() - donationRequestDto.getDonatePoint() < 0) {
-				return Mono.error(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
-			}
-			return pointRepository.save(donater.usePoint(donationRequestDto.getDonatePoint()))
-				.flatMap(savedPoint -> pointRepository.findByMemberId(streamerId))
-				.log()
-				.flatMap(savedstreamerPoint -> {
-					Point streamerPoint = savedstreamerPoint.addPoint(donationRequestDto.getDonatePoint());
-					return pointRepository.save(streamerPoint)
-						.flatMap(updatepoint -> pointLogRepository.save(
-							new PointLog(member, donationRequestDto, LocalDateTime.now(), streamerId)));
-				})
-				.log()
-				.flatMap(updatepoint -> Mono.just(ResponseEntity.ok(
-					new DonationResponseDto(member.getId(), member.getNickname(), streamerId,
-						donationRequestDto.getContents(), donater.getPoint(), LocalDateTime.now().toString()))))
-				.log();
-		});
+	public Mono<ResponseEntity<DonationResponseDto>> usePoint(DonationRequestDto donationRequestDto, Member member, Long streamerId) {
+		return pointRepository.findByMemberId(member.getId())
+			.flatMap(donater -> {
+				if (Objects.equals(streamerId, donater.getId())) {
+					return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "본인 방송에 후원하실 수 없습니다."));
+				}
+
+				int donatePoint = donationRequestDto.getDonatePoint();
+				if (donater.getPoint() < donatePoint) {
+					return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "후원 할 수 있는 금액이 부족합니다."));
+				}
+
+				return pointRepository.findByMemberId(streamerId)
+					.flatMap(streamerPoint -> {
+						donater.usePoint(donatePoint);
+						streamerPoint.addPoint(donatePoint);
+
+						return webClientBuilder.build()
+							.post()
+							.uri("http://localhost:8082/api/{streamerId}/donation", streamerId)
+							.bodyValue(new DonationWebClientDto(member.getNickname(), streamerId, donationRequestDto.getContents(), donatePoint))
+							.retrieve()
+							.bodyToMono(Void.class)
+							.then(Mono.fromCallable(() -> ResponseEntity.ok(new DonationResponseDto(
+								member.getId(),
+								member.getNickname(),
+								streamerId,
+								donationRequestDto.getContents(),
+								donater.getPoint(),
+								LocalDateTime.now().toString()
+							))));
+					});
+			});
 	}
 
 	public Mono<ResponseEntity<Flux<DonationRankingDto>>> donationRank(Member member) {
