@@ -22,7 +22,7 @@ import com.hanghae.lemonairservice.entity.Point;
 import com.hanghae.lemonairservice.entity.PointLog;
 import com.hanghae.lemonairservice.exception.point.FailedAddPointException;
 import com.hanghae.lemonairservice.exception.point.NoDonationLogException;
-import com.hanghae.lemonairservice.exception.point.NoPointException;
+import com.hanghae.lemonairservice.exception.point.NotEnoughPointException;
 import com.hanghae.lemonairservice.exception.point.NotExistUserException;
 import com.hanghae.lemonairservice.repository.PointLogRepository;
 import com.hanghae.lemonairservice.repository.PointRepository;
@@ -173,7 +173,7 @@ public class PointServiceTest {
 		given(pointRepository.findById(member2.getId())).willReturn(Mono.just(point2));
 
 		StepVerifier.create(pointService.usePoint(donationRequestDto1,member2,member1.getId()))
-				.verifyError(NoPointException.class);
+				.verifyError(NotEnoughPointException.class);
 		}
 
 	@Test

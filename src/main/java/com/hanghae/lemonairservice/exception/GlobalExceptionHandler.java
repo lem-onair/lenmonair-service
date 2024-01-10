@@ -15,7 +15,7 @@ import com.hanghae.lemonairservice.exception.member.NotEqualPasswordException;
 import com.hanghae.lemonairservice.exception.member.PasswordFormException;
 import com.hanghae.lemonairservice.exception.point.FailedAddPointException;
 import com.hanghae.lemonairservice.exception.point.NoDonationLogException;
-import com.hanghae.lemonairservice.exception.point.NoPointException;
+import com.hanghae.lemonairservice.exception.point.NotEnoughPointException;
 import com.hanghae.lemonairservice.exception.point.NotExistUserException;
 import com.hanghae.lemonairservice.exception.point.NotUsepointToSelfException;
 import com.hanghae.lemonairservice.exception.refreshtoken.NotvalidTokenException;
@@ -110,10 +110,10 @@ public class GlobalExceptionHandler {
 			HttpStatus.BAD_REQUEST);
 	}
 
-	@ExceptionHandler(NoPointException.class)
+	@ExceptionHandler(NotEnoughPointException.class)
 	protected ResponseEntity<String> handleNoPointException() {
-		log.error("handle : " + NoPointException.errorMsg);
-		return new ResponseEntity<>(NoPointException.errorMsg,
+		log.error("handle : " + NotEnoughPointException.errorMsg);
+		return new ResponseEntity<>(NotEnoughPointException.errorMsg,
 			HttpStatus.BAD_REQUEST);
 	}
 

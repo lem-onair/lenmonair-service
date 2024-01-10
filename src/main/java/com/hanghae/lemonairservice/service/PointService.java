@@ -3,11 +3,9 @@ package com.hanghae.lemonairservice.service;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.hanghae.lemonairservice.dto.point.AddPointRequestDto;
 import com.hanghae.lemonairservice.dto.point.DonationRankingDto;
@@ -19,7 +17,7 @@ import com.hanghae.lemonairservice.entity.Point;
 import com.hanghae.lemonairservice.entity.PointLog;
 import com.hanghae.lemonairservice.exception.point.FailedAddPointException;
 import com.hanghae.lemonairservice.exception.point.NoDonationLogException;
-import com.hanghae.lemonairservice.exception.point.NoPointException;
+import com.hanghae.lemonairservice.exception.point.NotEnoughPointException;
 import com.hanghae.lemonairservice.exception.point.NotExistUserException;
 import com.hanghae.lemonairservice.exception.point.NotUsepointToSelfException;
 import com.hanghae.lemonairservice.repository.PointLogRepository;
@@ -50,13 +48,13 @@ public class PointService {
 		return pointRepository.findById(member.getId())
 			.flatMap(donater -> {
 				if (Objects.equals(streamerId, donater.getId())) {
-					return Mono.error(() -> new NotUsepointToSelfException());
+					return Mono.error(NotUsepointToSelfException::new);
 				}
 				if (donater.getPoint() <= 0) {
-					return Mono.error(() -> new NoPointException());
+					return Mono.error(NotEnoughPointException::new);
 				}
 				if (donater.getPoint() - donationRequestDto.getDonatePoint() < 0) {
-					return Mono.error(() -> new NoPointException());
+					return Mono.error(NotEnoughPointException::new);
 				}
 				return pointRepository.save(donater.usePoint(donationRequestDto.getDonatePoint()))
 					.flatMap(savedPoint -> pointRepository.findById(streamerId))
