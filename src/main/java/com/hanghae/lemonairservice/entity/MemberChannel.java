@@ -25,6 +25,7 @@ public class MemberChannel {
 	private Long id;
 	private String title;
 	private Boolean onAir;
+
 	@Setter
 	private LocalDateTime startedAt;
 

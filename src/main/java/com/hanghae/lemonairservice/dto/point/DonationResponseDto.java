@@ -1,5 +1,7 @@
 package com.hanghae.lemonairservice.dto.point;
 
+import com.hanghae.lemonairservice.entity.Member;
+
 import lombok.Getter;
 
 @Getter
@@ -9,15 +11,11 @@ public class DonationResponseDto {
 	private String donaterNickname;
 	private String content;
 	private int remainingPoint;
-	private String donated;
 
-	public DonationResponseDto(Long donaterId, String nickname, Long streamerId, String contents, int remainingPoint,
-		String now) {
-		this.donaterId = donaterId;
+	public DonationResponseDto(Long donatorId, Long streamerId, String contents, int remainingPoint) {
+		this.donaterId = donatorId;
 		this.streamerId = streamerId;
-		this.donaterNickname = nickname;
 		this.content = contents;
 		this.remainingPoint = remainingPoint;
-		this.donated = now;
 	}
 }

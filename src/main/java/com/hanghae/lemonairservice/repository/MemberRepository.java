@@ -12,7 +12,7 @@ public interface MemberRepository extends ReactiveCrudRepository<Member, Long> {
 
 	Mono<Boolean> existsByNickname(String nickname);
 
-	Mono<Member> findByLoginId(String userId);
+	Mono<Member> findByLoginId(String loginId);
 
 	Mono<Boolean> existsByLoginId(String loginId);
 }

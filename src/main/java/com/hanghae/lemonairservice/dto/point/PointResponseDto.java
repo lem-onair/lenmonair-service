@@ -8,11 +8,9 @@ import lombok.Getter;
 public class PointResponseDto {
 	private Long memberId;
 	private int point;
-	private String nickname;
 
-	public PointResponseDto(Member member, int point) {
-		this.memberId = member.getId();
-		this.nickname = member.getNickname();
+	public PointResponseDto(long memberId, int point) {
+		this.memberId = memberId;
 		this.point = point;
 	}
 }

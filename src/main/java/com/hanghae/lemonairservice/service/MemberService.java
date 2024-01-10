@@ -16,11 +16,9 @@ import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
-import com.hanghae.lemonairservice.entity.Point;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
-import com.hanghae.lemonairservice.repository.PointRepository;
 import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -40,14 +38,13 @@ public class MemberService {
 	private final MemberChannelRepository memberChannelRepository;
 	private final JwtUtil jwtUtil;
 	private final RefreshTokenRepository refreshTokenRepository;
-	private final PointRepository pointRepository;
 
 	private static boolean validatePassword(String password) {
 		return pattern.matcher(password).matches();
 	}
 
 	@Transactional
-	public Mono<ResponseEntity<SignUpResponseDto>> signup(SignUpRequestDto signupRequestDto) {
+	public Mono<SignUpResponseDto> signup(SignUpRequestDto signupRequestDto) {
 
 		if (!validatePassword(signupRequestDto.getPassword())) {
 			return Mono.error(
@@ -76,22 +73,14 @@ public class MemberService {
 				return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 닉네임은 이미 사용 중입니다."));
 			} else {
 				String streamKey = UUID.randomUUID().toString();
-				Mono<Member> monomember = memberRepository.save(
-						new Member(signupRequestDto.getEmail(), passwordEncoder.encode(signupRequestDto.getPassword()),
-							signupRequestDto.getLoginId(), signupRequestDto.getNickname(), streamKey))
+				String encodedPassword = passwordEncoder.encode(signupRequestDto.getPassword());
+				return memberRepository.save(new Member(signupRequestDto, encodedPassword, streamKey))
 					.onErrorResume(throwable -> Mono.error(
-						new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")));
-				return monomember.flatMap(membermono -> {
-					Mono<MemberChannel> monochannel = memberChannelRepository.save(new MemberChannel(membermono))
+						new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")))
+					.flatMap(savedMember -> memberChannelRepository.save(new MemberChannel(savedMember))
 						.onErrorResume(throwable -> Mono.error(
-							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채널 생성에 실패했습니다.")));
-
-					Mono<Point> monopoint = pointRepository.save(new Point(membermono))
-						.onErrorResume(throwable -> Mono.error(
-							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "포인트 생성에 실패했습니다.")));
-
-					return Mono.zip(monochannel, monopoint).thenReturn(membermono);
-				}).thenReturn(ResponseEntity.ok(new SignUpResponseDto(streamKey)));
+							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채널 생성에 실패했습니다.")))
+						.map(savedMemberChannel -> new SignUpResponseDto(savedMember.getStreamKey())));
 			}
 		});
 	}
