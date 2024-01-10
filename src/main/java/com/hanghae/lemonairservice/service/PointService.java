@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,8 +38,10 @@ public class PointService {
 
     private final PointRepository pointRepository;
     private final PointLogRepository pointLogRepository;
-    private final MemberRepository memberRepository;
 
+
+    @Value("${chat.url}")
+    private String chatUrl;
 
     @Autowired
     private WebClient webClient;
@@ -112,7 +115,7 @@ public class PointService {
                             .then(
                                 webClient
                                     .post()
-                                    .uri("http://localhost:8082/api/donation/{streamerId}", streamerId.toString())
+                                    .uri(chatUrl + "{streamerId}", streamerId.toString())
                                     .header(HttpHeaders.CONTENT_TYPE,
                                         MediaType.APPLICATION_JSON_VALUE)
                                     .bodyValue(
