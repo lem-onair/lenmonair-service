@@ -31,6 +31,11 @@ import reactor.core.publisher.Mono;
 public class PointController {
 	private final PointService pointService;
 
+	@GetMapping("/point")
+	public Mono<ResponseEntity<PointResponseDto>> getPoint(@AuthenticationPrincipal Principal user) {
+		return pointService.getPoint(PrincipalUtil.getMember(user));
+	}
+
 	@PostMapping("/point")
 	public Mono<ResponseEntity<PointResponseDto>> addPoint(@RequestBody AddPointRequestDto addPointRequestDto,
 		Principal user) {
