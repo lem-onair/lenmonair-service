@@ -19,7 +19,6 @@ public class Point {
 	private Long id;
 	@Column("member_id")
 	private Long memberId;
-	private String nickname;
 	private int point;
 
 	@Transient
@@ -27,18 +26,6 @@ public class Point {
 
 	public Point(Member member) {
 		this.memberId = member.getId();
-		this.nickname = member.getNickname();
 		this.point = 0;
 	}
-
-	public Point addPoint(int point) {
-		this.point += point;
-		return this;
-	}
-
-	public Point usePoint(int point) {
-		this.point -= point;
-		return this;
-	}
-
 }

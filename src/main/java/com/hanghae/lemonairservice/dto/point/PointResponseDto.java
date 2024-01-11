@@ -7,12 +7,12 @@ import lombok.Getter;
 @Getter
 public class PointResponseDto {
 	private Long memberId;
-	private int point;
-	private String nickname;
+	private Long point;
+	private String loginId;
 
-	public PointResponseDto(Member member, int point) {
+	public PointResponseDto(Member member, Long point) {
 		this.memberId = member.getId();
-		this.nickname = member.getNickname();
+		this.loginId = member.getLoginId();
 		this.point = point;
 	}
 }

@@ -23,9 +23,8 @@ CREATE TABLE member_channel
 CREATE TABLE point
 (
     id                  SERIAL PRIMARY KEY,
-    member_id           BIGINT NOT NULL UNIQUE,
+    member_id           BIGINT NOT NULL,
     point               INTEGER,
-    nickname            VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE point_log

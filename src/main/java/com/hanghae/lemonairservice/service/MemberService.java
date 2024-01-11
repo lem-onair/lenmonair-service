@@ -77,24 +77,24 @@ public class MemberService {
 				return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 닉네임은 이미 사용 중입니다."));
 			} else {
 				String streamKey = UUID.randomUUID().toString();
-				Mono<Member> monomember = memberRepository.save(
+				Mono<Member> monoMember = memberRepository.save(
 						new Member(signupRequestDto.getEmail(), passwordEncoder.encode(signupRequestDto.getPassword()),
 							signupRequestDto.getLoginId(), signupRequestDto.getNickname(), streamKey))
 					.publishOn(Schedulers.boundedElastic())
 					.onErrorResume(throwable -> Mono.error(
 						new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")));
-				return monomember.flatMap(membermono -> {
-					Mono<MemberChannel> monochannel = memberChannelRepository.save(new MemberChannel(membermono))
+				return monoMember.flatMap(memberMono -> {
+					Mono<MemberChannel> monoChannel = memberChannelRepository.save(new MemberChannel(memberMono))
 						.publishOn(Schedulers.boundedElastic())
 						.onErrorResume(throwable -> Mono.error(
 							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채널 생성에 실패했습니다.")));
 
-					Mono<Point> monopoint = pointRepository.save(new Point(membermono))
+					Mono<Point> monoPoint = pointRepository.save(new Point(memberMono))
 						.publishOn(Schedulers.boundedElastic())
 						.onErrorResume(throwable -> Mono.error(
 							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "포인트 생성에 실패했습니다.")));
 
-					return Mono.zip(monochannel, monopoint).thenReturn(membermono);
+					return Mono.zip(monoChannel, monoPoint).thenReturn(memberMono);
 				}).thenReturn(ResponseEntity.ok(new SignUpResponseDto(streamKey)));
 			}
 		});
