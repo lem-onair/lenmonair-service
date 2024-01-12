@@ -8,7 +8,6 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import com.hanghae.lemonairservice.dto.point.DonationRequestDto;
-import com.hanghae.lemonairservice.dto.point.DonationResponseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,7 +37,7 @@ public class PointLog {
 	@Transient
 	private Point point;
 
-	public PointLog(Member member, DonationRequestDto donationRequestDto,LocalDateTime now, Long streamerId) {
+	public PointLog(Member member, DonationRequestDto donationRequestDto, LocalDateTime now, Long streamerId) {
 		this.streamerId = streamerId;
 		this.donaterId = member.getId();
 		this.contents = donationRequestDto.getContents();

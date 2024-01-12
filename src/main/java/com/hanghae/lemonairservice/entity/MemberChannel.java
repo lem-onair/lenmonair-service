@@ -1,4 +1,5 @@
 package com.hanghae.lemonairservice.entity;
+
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
@@ -13,8 +14,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
+
 @Setter
+@Getter
 @Table("member_channel")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
@@ -24,6 +26,7 @@ public class MemberChannel {
 	private Long id;
 	private String title;
 	private Boolean onAir;
+	@Setter
 	private LocalDateTime startedAt;
 
 	@Column("total_streaming")
@@ -32,12 +35,10 @@ public class MemberChannel {
 	@Column("member_id")
 	private Long memberId;
 
+	@Setter
 	@Transient
 	private Member member;
 
-	public void setMember(Member member){
-		this.member = member;
-	}
 	public MemberChannel(Member member) {
 		this.title = member.getNickname() + "의 방송";
 		this.onAir = false;
@@ -45,13 +46,8 @@ public class MemberChannel {
 		this.memberId = member.getId();
 	}
 
-	public MemberChannel addTime(int time){
+	public void addTime(int time) {
 		this.totalStreaming += time;
-		return this;
-	}
-
-	public void setStartedAt(LocalDateTime startedAt) {
-		this.startedAt = startedAt;
 	}
 
 }

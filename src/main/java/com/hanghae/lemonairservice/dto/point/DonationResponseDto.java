@@ -1,7 +1,5 @@
 package com.hanghae.lemonairservice.dto.point;
 
-import java.time.LocalDateTime;
-
 import lombok.Getter;
 
 @Getter
@@ -13,7 +11,8 @@ public class DonationResponseDto {
 	private int remainingPoint;
 	private String donated;
 
-	public DonationResponseDto(Long donaterId, String nickname, Long streamerId, String contents, int remainingPoint, String now){
+	public DonationResponseDto(Long donaterId, String nickname, Long streamerId, String contents, int remainingPoint,
+		String now) {
 		this.donaterId = donaterId;
 		this.streamerId = streamerId;
 		this.donaterNickname = nickname;

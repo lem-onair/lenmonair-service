@@ -1,9 +1,5 @@
 package com.hanghae.lemonairservice.dto.point;
 
-import java.util.List;
-
-import com.hanghae.lemonairservice.entity.PointLog;
-
 import lombok.Getter;
 
 @Getter
@@ -14,3 +10,4 @@ public class DonationRankingDto {
 		this.nickname = nickname;
 	}
 }
+

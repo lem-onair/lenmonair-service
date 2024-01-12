@@ -19,24 +19,22 @@ import com.hanghae.lemonairservice.exception.point.NotEnoughPointException;
 import com.hanghae.lemonairservice.exception.point.NotExistUserException;
 import com.hanghae.lemonairservice.exception.point.NotUsepointToSelfException;
 import com.hanghae.lemonairservice.exception.refreshtoken.NotvalidTokenException;
-import com.hanghae.lemonairservice.exception.stream.NoStartedAtLogException;
-import com.hanghae.lemonairservice.exception.stream.NotEqualsStreamKeysException;
-import com.hanghae.lemonairservice.exception.stream.NotExistsChannelException;
-import com.hanghae.lemonairservice.exception.stream.NotExistsIdException;
+import com.hanghae.lemonairservice.exception.stream.StreamStartedAtIsNullException;
+import com.hanghae.lemonairservice.exception.stream.StreamKeysNotEqualException;
+import com.hanghae.lemonairservice.exception.stream.ChannelNotExistsException;
+import com.hanghae.lemonairservice.exception.stream.MemberNotFoundByLoginIdException;
 
 import lombok.extern.slf4j.Slf4j;
 
-@ControllerAdvice // 4-1. 비즈니스로직에서 발생한 예외에 대해서 client가 적절한 응답을 받아야 하는경우 사용합니다.
+@ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-	@ExceptionHandler(NoOnAirChannelException.class) // 4-2. 어떤 예외 클래스가 발생했을 때 아래 메소드가 실행될 것인지, 예외 클래스를 지정합니다.
-	// @ResponseStatus(HttpStatus.NOT_FOUND) // 4-5. 4-4에서 HttpStatus를 정의하여 반환하고 있으므로 현재는 필요가 없습니다.
-	// 만약 아래 return 문을 제거하고 ResponseStatus 어노테이션 만을 사용한다면 에러메세지 없이 404 상태코드만 응답합니다.
+	@ExceptionHandler(NoOnAirChannelException.class)
 	protected ResponseEntity<String> handleNoOnAirChannelException() {
-		log.error("handle : " + NoOnAirChannelException.errorMsg); // 4-3. 서버단에서도 예외 발생 사실을 알 수 있도록 로깅합니다.
+		log.error("handle : " + NoOnAirChannelException.errorMsg);
 		return new ResponseEntity<>(NoOnAirChannelException.errorMsg,
-			HttpStatus.NOT_FOUND); // 4-4. 최종적으로 client에게 전달될 ResponseEntity를 정의합니다.
+			HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(NoExistChannelException.class)
@@ -131,31 +129,31 @@ public class GlobalExceptionHandler {
 			HttpStatus.UNAUTHORIZED);
 	}
 
-	@ExceptionHandler(NotEqualsStreamKeysException.class)
+	@ExceptionHandler(StreamKeysNotEqualException.class)
 	protected ResponseEntity<String> handleNotEqualsStreamKeysException() {
-		log.error("handle : " + NotEqualsStreamKeysException.errorMsg);
-		return new ResponseEntity<>(NotEqualsStreamKeysException.errorMsg,
+		log.error("handle : " + StreamKeysNotEqualException.errorMsg);
+		return new ResponseEntity<>(StreamKeysNotEqualException.errorMsg,
 			HttpStatus.BAD_REQUEST);
 	}
 
-	@ExceptionHandler(NotExistsIdException.class)
+	@ExceptionHandler(MemberNotFoundByLoginIdException.class)
 	protected ResponseEntity<String> handleNotExistsIdException(String streamerId) {
-		log.error("handle : " + NotExistsIdException.errorMsg(streamerId));
-		return new ResponseEntity<>(NotExistsIdException.errorMsg(streamerId),
+		log.error("handle : " + MemberNotFoundByLoginIdException.errorMsg(streamerId));
+		return new ResponseEntity<>(MemberNotFoundByLoginIdException.errorMsg(streamerId),
 			HttpStatus.NOT_FOUND);
 	}
 
-	@ExceptionHandler(NotExistsChannelException.class)
+	@ExceptionHandler(ChannelNotExistsException.class)
 	protected ResponseEntity<String> handleNotExistsChannelException() {
-		log.error("handle : " + NotExistsChannelException.errorMsg);
-		return new ResponseEntity<>(NotExistsChannelException.errorMsg,
+		log.error("handle : " + ChannelNotExistsException.errorMsg);
+		return new ResponseEntity<>(ChannelNotExistsException.errorMsg,
 			HttpStatus.NOT_FOUND);
 	}
 
-	@ExceptionHandler(NoStartedAtLogException.class)
+	@ExceptionHandler(StreamStartedAtIsNullException.class)
 	protected ResponseEntity<String> handleNotOnAirChannelException() {
-		log.error("handle : " + NoStartedAtLogException.errorMsg);
-		return new ResponseEntity<>(NoStartedAtLogException.errorMsg,
+		log.error("handle : " + StreamStartedAtIsNullException.errorMsg);
+		return new ResponseEntity<>(StreamStartedAtIsNullException.errorMsg,
 			HttpStatus.BAD_REQUEST);
 	}
 }

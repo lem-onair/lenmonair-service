@@ -1,6 +1,5 @@
 package com.hanghae.lemonairservice.service;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
@@ -10,15 +9,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.aot.hint.RuntimeHintsRegistrar;
 
 import com.hanghae.lemonairservice.dto.stream.StreamKeyRequestDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
-import com.hanghae.lemonairservice.exception.stream.NoStartedAtLogException;
-import com.hanghae.lemonairservice.exception.stream.NotEqualsStreamKeysException;
-import com.hanghae.lemonairservice.exception.stream.NotExistsChannelException;
-import com.hanghae.lemonairservice.exception.stream.NotExistsIdException;
+import com.hanghae.lemonairservice.exception.stream.StreamStartedAtIsNullException;
+import com.hanghae.lemonairservice.exception.stream.StreamKeysNotEqualException;
+import com.hanghae.lemonairservice.exception.stream.ChannelNotExistsException;
+import com.hanghae.lemonairservice.exception.stream.MemberNotFoundByLoginIdException;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 
@@ -60,7 +58,7 @@ public class StreamingServiceTest {
 		given(memberRepository.findByLoginId(streamerId)).willReturn(Mono.just(member1));
 
 		StepVerifier.create(streamService.checkStreamValidity(streamerId,streamKeyRequestDto))
-			.verifyError(NotEqualsStreamKeysException.class);
+			.verifyError(StreamKeysNotEqualException.class);
 	}
 
 	@Test
@@ -90,7 +88,7 @@ public class StreamingServiceTest {
 
 		given(memberRepository.findByLoginId(streamerId)).willReturn(Mono.empty());
 		StepVerifier.create(streamService.startStream(streamerId))
-			.verifyError(NotExistsIdException.class);
+			.verifyError(MemberNotFoundByLoginIdException.class);
 	}
 
 	@Test
@@ -102,7 +100,7 @@ public class StreamingServiceTest {
 		given(memberChannelRepository.findByMemberId(member1.getId())).willReturn(Mono.empty());
 
 		StepVerifier.create(streamService.startStream(streamerId))
-			.verifyError(NotExistsChannelException.class);
+			.verifyError(ChannelNotExistsException.class);
 	}
 
 	@Test
@@ -131,7 +129,7 @@ public class StreamingServiceTest {
 		given(memberRepository.findByLoginId(streamerId)).willReturn(Mono.empty());
 
 		StepVerifier.create(streamService.stopStream(streamerId))
-			.verifyError(NotExistsIdException.class);
+			.verifyError(MemberNotFoundByLoginIdException.class);
 	}
 
 	@Test
@@ -143,7 +141,7 @@ public class StreamingServiceTest {
 		given(memberChannelRepository.findByMemberId(member1.getId())).willReturn(Mono.empty());
 
 		StepVerifier.create(streamService.stopStream(streamerId))
-			.verifyError(NotExistsChannelException.class);
+			.verifyError(ChannelNotExistsException.class);
 	}
 
 	@Test
@@ -156,7 +154,7 @@ public class StreamingServiceTest {
 		given(memberChannelRepository.findByMemberId(member1.getId())).willReturn(Mono.just(memberChannel1));
 
 		StepVerifier.create(streamService.stopStream(streamerId))
-			.verifyError(NoStartedAtLogException.class);
+			.verifyError(StreamStartedAtIsNullException.class);
 	}
 
 }

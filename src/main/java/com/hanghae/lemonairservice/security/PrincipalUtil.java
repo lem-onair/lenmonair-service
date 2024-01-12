@@ -14,11 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 public class PrincipalUtil {
 	public static Member getMember(Principal principal) {
 		log.info("principal:" + principal);
-		if (principal instanceof Authentication) {
-			Authentication authentication = (Authentication) principal;
+		if (principal instanceof Authentication authentication) {
 			Object principalObject = authentication.getPrincipal();
-			if (principalObject instanceof UserDetailsImpl) {
-				UserDetailsImpl userDetails = (UserDetailsImpl) principalObject;
+			if (principalObject instanceof UserDetailsImpl userDetails) {
 				return userDetails.getMember();
 			}
 		}
