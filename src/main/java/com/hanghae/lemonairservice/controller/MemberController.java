@@ -25,7 +25,8 @@ public class MemberController {
 
 	@PostMapping("/signup")
 	public Mono<ResponseEntity<SignUpResponseDto>> signup(@RequestBody SignUpRequestDto signupRequestDto) {
-		return memberService.signup(signupRequestDto);
+		return memberService.signup(signupRequestDto)
+			.flatMap(value -> Mono.just(ResponseEntity.ok().body(value)));
 	}
 
 	@PostMapping("/login")

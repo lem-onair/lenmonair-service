@@ -1,8 +1,8 @@
 package com.hanghae.lemonairservice.service;
 
 import java.util.UUID;
-import java.util.regex.Pattern;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,7 +16,10 @@ import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
-import com.hanghae.lemonairservice.entity.Point;
+import com.hanghae.lemonairservice.exception.member.EmailAlreadyExistException;
+import com.hanghae.lemonairservice.exception.member.MemberIdAlreadyExistException;
+import com.hanghae.lemonairservice.exception.member.NicknameAlreadyExistException;
+import com.hanghae.lemonairservice.exception.member.PasswordRetypeMismatchException;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
 import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
@@ -27,15 +30,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import reactor.util.function.Tuple2;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class MemberService {
 
-	private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
-	private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final MemberChannelRepository memberChannelRepository;
@@ -43,61 +43,49 @@ public class MemberService {
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final PointRepository pointRepository;
 
-	private static boolean validatePassword(String password) {
-		return pattern.matcher(password).matches();
-	}
-
 	@Transactional
-	public Mono<ResponseEntity<SignUpResponseDto>> signup(SignUpRequestDto signupRequestDto) {
-
-		if (!validatePassword(signupRequestDto.getPassword())) {
-			return Mono.error(
-				new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호는 최소 8자 이상, 대소문자, 숫자, 특수문자를 포함해야 합니다."));
-		}
-
-		if (!signupRequestDto.getPassword().equals(signupRequestDto.getPassword2())) {
-			return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."));
-		}
-
-		Mono<Boolean> emailExists = memberRepository.existsByEmail(signupRequestDto.getEmail());
-		Mono<Boolean> nicknameExists = memberRepository.existsByNickname(signupRequestDto.getNickname());
-		Mono<Boolean> useridExists = memberRepository.existsByLoginId(signupRequestDto.getLoginId());
-
-		return emailExists.zipWith(nicknameExists.zipWith(useridExists)).flatMap(tuple -> {
-			boolean emailExistsValue = tuple.getT1();
-			Tuple2<Boolean, Boolean> nestedTuple = tuple.getT2();
-			boolean nicknameExistsValue = nestedTuple.getT1();
-			boolean useridExistsValue = nestedTuple.getT2();
-
-			if (emailExistsValue) {
-				return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 이메일은 이미 사용 중입니다."));
-			} else if (useridExistsValue) {
-				return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 아이디는 이미 사용 중입니다."));
-			} else if (nicknameExistsValue) {
-				return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 닉네임은 이미 사용 중입니다."));
+	public Mono<SignUpResponseDto> signup(SignUpRequestDto signupRequestDto) {
+		return Mono.zip(passwordRetypeCheck(signupRequestDto),
+			memberRepository.existsByEmail(signupRequestDto.getEmail()),
+			memberRepository.existsByNickname(signupRequestDto.getNickname()),
+			memberRepository.existsByLoginId(signupRequestDto.getLoginId())).flatMap(tuple -> {
+			if (tuple.getT1()) {
+				return Mono.defer(() -> Mono.error(new PasswordRetypeMismatchException()));
+			} else if (tuple.getT2()) {
+				return Mono.defer(() -> Mono.error(new EmailAlreadyExistException(signupRequestDto.getEmail())));
+			} else if (tuple.getT3()) {
+				return Mono.defer(() -> Mono.error(new NicknameAlreadyExistException(signupRequestDto.getNickname())));
+			} else if (tuple.getT4()) {
+				return Mono.defer(() -> Mono.error(new MemberIdAlreadyExistException(signupRequestDto.getLoginId())));
 			} else {
-				String streamKey = UUID.randomUUID().toString();
-				Mono<Member> monomember = memberRepository.save(
-						new Member(signupRequestDto.getEmail(), passwordEncoder.encode(signupRequestDto.getPassword()),
-							signupRequestDto.getLoginId(), signupRequestDto.getNickname(), streamKey))
-					.publishOn(Schedulers.boundedElastic())
-					.onErrorResume(throwable -> Mono.error(
-						new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")));
-				return monomember.flatMap(membermono -> {
-					Mono<MemberChannel> monochannel = memberChannelRepository.save(new MemberChannel(membermono))
-						.publishOn(Schedulers.boundedElastic())
-						.onErrorResume(throwable -> Mono.error(
-							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채널 생성에 실패했습니다.")));
-
-					Mono<Point> monopoint = pointRepository.save(new Point(membermono))
-						.publishOn(Schedulers.boundedElastic())
-						.onErrorResume(throwable -> Mono.error(
-							new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "포인트 생성에 실패했습니다.")));
-
-					return Mono.zip(monochannel, monopoint).thenReturn(membermono);
-				}).thenReturn(ResponseEntity.ok(new SignUpResponseDto(streamKey)));
+				return saveMember(signupRequestDto).flatMap(saveMember -> {
+					saveMemberChannel(saveMember).subscribe();
+					return Mono.just(new SignUpResponseDto(saveMember.getStreamKey()));
+				});
 			}
 		});
+	}
+
+	public Mono<Boolean> passwordRetypeCheck(SignUpRequestDto signUpRequestDto) {
+		return Mono.fromCallable(() -> signUpRequestDto.getPassword().equals(signUpRequestDto.getPassword2()));
+	}
+
+	@NotNull
+	private Mono<MemberChannel> saveMemberChannel(Member membermono) {
+		return memberChannelRepository.save(new MemberChannel(membermono))
+			.publishOn(Schedulers.boundedElastic())
+			.onErrorResume(throwable -> Mono.error(
+				new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "채널 생성에 실패했습니다.")));
+	}
+
+	@NotNull
+	private Mono<Member> saveMember(SignUpRequestDto signupRequestDto) {
+		return memberRepository.save(
+				new Member(signupRequestDto, passwordEncoder.encode(signupRequestDto.getPassword()),
+					UUID.randomUUID().toString()))
+			.publishOn(Schedulers.boundedElastic())
+			.onErrorResume(throwable -> Mono.error(
+				new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")));
 	}
 
 	public Mono<ResponseEntity<LoginResponseDto>> login(LoginRequestDto loginRequestDto) {
