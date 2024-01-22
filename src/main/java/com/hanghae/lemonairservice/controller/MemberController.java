@@ -15,6 +15,7 @@ import com.hanghae.lemonairservice.security.UserDetailsImpl;
 import com.hanghae.lemonairservice.service.MemberService;
 import com.hanghae.lemonairservice.util.ResponseMapper;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -25,7 +26,7 @@ public class MemberController {
 	private final MemberService memberService;
 
 	@PostMapping("/signup")
-	public Mono<ResponseEntity<SignUpResponseDto>> signup(@RequestBody SignUpRequestDto signupRequestDto) {
+	public Mono<ResponseEntity<SignUpResponseDto>> signup(@RequestBody @Valid SignUpRequestDto signupRequestDto) {
 		return memberService.signup(signupRequestDto).flatMap(ResponseMapper::mapToResponse);
 	}
 
