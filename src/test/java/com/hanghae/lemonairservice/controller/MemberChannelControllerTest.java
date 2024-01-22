@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -41,8 +40,8 @@ class MemberChannelControllerTest {
 			MemberChannelResponseDto.builder().channelId(1L).title("title").streamerNickname("nickname").build());
 		memberChannelResponseDtoList.add(
 			MemberChannelResponseDto.builder().channelId(2L).title("title2").streamerNickname("nickname2").build());
-		Mono<ResponseEntity<List<MemberChannelResponseDto>>> expectReturn = Mono.just(
-			ResponseEntity.ok(memberChannelResponseDtoList));
+		Mono<List<MemberChannelResponseDto>> expectReturn = Mono.just(
+			memberChannelResponseDtoList);
 		given(memberChannelService.getChannelsByOnAirTrue()).willReturn(expectReturn);
 
 		// when

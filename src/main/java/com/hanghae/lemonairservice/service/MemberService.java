@@ -56,7 +56,7 @@ public class MemberService {
 						() -> Mono.error(new MemberIdAlreadyExistException(signupRequestDto.getLoginId())));
 				} else {
 					return saveMember(signupRequestDto).flatMap(
-						saveMember -> memberChannelService.createChannel(saveMember)
+						saveMember -> memberChannelService.createMemberChannel(saveMember)
 							.then(Mono.just(new SignUpResponseDto(saveMember.getStreamKey()))));
 				}
 			}));
@@ -93,6 +93,11 @@ public class MemberService {
 			.publishOn(Schedulers.boundedElastic())
 			.onErrorResume(throwable -> Mono.error(
 				new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")));
+	}
+
+	public Mono<Member> findById(Long memberId) {
+		return memberRepository.findById(memberId)
+			.switchIfEmpty(Mono.defer(() -> Mono.error(new MemberNotFoundException("회원 정보를 찾을 수 없습니다."))));
 	}
 
 }

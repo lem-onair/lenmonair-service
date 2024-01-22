@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelDetailResponseDto;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.service.MemberChannelService;
+import com.hanghae.lemonairservice.util.ResponseMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +26,13 @@ public class MemberChannelController {
 
 	@GetMapping("/channels")
 	public Mono<ResponseEntity<List<MemberChannelResponseDto>>> getChannelsByOnAirTrue() {
-		return memberChannelService.getChannelsByOnAirTrue();
+		return memberChannelService.getChannelsByOnAirTrue().flatMap(ResponseMapper::mapToResponse);
 	}
 
 	@GetMapping("/channels/{channelId}")
 	public Mono<ResponseEntity<MemberChannelDetailResponseDto>> getChannelDetail(
 		@PathVariable("channelId") Long channelId) {
-		return memberChannelService.getChannelDetail(channelId);
+		return memberChannelService.getChannelDetail(channelId).flatMap(ResponseMapper::mapToResponse);
 	}
 
 }

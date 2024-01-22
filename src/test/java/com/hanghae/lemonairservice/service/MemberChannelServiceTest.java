@@ -4,15 +4,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
 import com.hanghae.lemonairservice.exception.channel.NoOnAirChannelException;
@@ -28,8 +25,6 @@ class MemberChannelServiceTest {
 
 	@InjectMocks
 	private MemberChannelService memberChannelService;
-	@Mock
-	private AwsService awsService;
 	@Mock
 	private MemberChannelRepository memberChannelRepository;
 	@Mock
@@ -51,12 +46,8 @@ class MemberChannelServiceTest {
 		given(memberRepository.findById(memberChannel1.getMemberId())).willReturn(Mono.just(member1));
 		given(memberRepository.findById(memberChannel2.getMemberId())).willReturn(Mono.just(member2));
 
-		given(awsService.getThumbnailCloudFrontUrl(member1.getLoginId())).willReturn("mytesturl1");
-		given(awsService.getThumbnailCloudFrontUrl(member2.getLoginId())).willReturn("mytesturl2");
-
 		// when
-		StepVerifier.create(memberChannelService.getChannelsByOnAirTrue()).expectNextMatches(listResponseEntity -> {
-			List<MemberChannelResponseDto> body = listResponseEntity.getBody();
+		StepVerifier.create(memberChannelService.getChannelsByOnAirTrue()).expectNextMatches(body -> {
 			assertNotNull(body);
 			assertThat(body.size()).isEqualTo(2);
 			assertThat(body.get(0).getTitle()).isEqualTo("title1");
@@ -69,8 +60,6 @@ class MemberChannelServiceTest {
 		verify(memberChannelRepository).findAllByOnAirIsTrue();
 		verify(memberRepository).findById(memberChannel1.getMemberId());
 		verify(memberRepository).findById(memberChannel2.getMemberId());
-		verify(awsService).getThumbnailCloudFrontUrl(member1.getLoginId());
-		verify(awsService).getThumbnailCloudFrontUrl(member2.getLoginId());
 	}
 
 	@Test
