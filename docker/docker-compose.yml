@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - ${MYSQL_BINDING_PORT}:${MYSQL_PORT}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+  redis:
+    image:
+      redis:7.2.4
+    ports:
+      - ${REDIS_BINDING_PORT}:${REDIS_PORT}
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ${REDIS_DATA_PATH}:/data
+      - ${REDIS_DEFAULT_CONFIG_FILE}:/usr/local/etc/redis/redis.conf
+    restart: always
