@@ -1,5 +1,7 @@
 package com.hanghae.lemonairservice.entity;
 
+import java.util.UUID;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -33,19 +35,11 @@ public class Member {
 
 	private String streamKey;
 
-	public Member(String email, String password, String loginId, String nickname, String streamKey) {
-		this.email = email;
-		this.password = password;
-		this.loginId = loginId;
-		this.nickname = nickname;
-		this.streamKey = streamKey;
-	}
-
-	public Member(SignUpRequestDto signUpRequestDto, String encryptedPassword, String streamKey) {
+	public Member(SignUpRequestDto signUpRequestDto, String encryptedPassword) {
 		this.email = signUpRequestDto.getEmail();
 		this.password = encryptedPassword;
 		this.loginId = signUpRequestDto.getLoginId();
 		this.nickname = signUpRequestDto.getNickname();
-		this.streamKey = streamKey;
+		this.streamKey = UUID.randomUUID().toString();
 	}
 }

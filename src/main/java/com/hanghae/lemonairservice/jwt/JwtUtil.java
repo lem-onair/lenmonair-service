@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hanghae.lemonairservice.entity.Member;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -66,6 +67,22 @@ public class JwtUtil {
 			.claim("type", "refreshToken")
 			.claim("id", loginId)
 			.claim("nickname", nickname)
+			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+			.setIssuedAt(date)
+			.signWith(key, signatureAlgorithm)
+			.compact();
+
+		return Mono.just(token);
+	}
+
+	public Mono<String> createRefreshToken(Member member) {
+		Date date = new Date();
+
+		long TOKEN_TIME = 360 * 60 * 1000L;
+		String token = BEARER_PREFIX + Jwts.builder()
+			.claim("type", "refreshToken")
+			.claim("id", member.getLoginId())
+			.claim("nickname", member.getNickname())
 			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
 			.setIssuedAt(date)
 			.signWith(key, signatureAlgorithm)
@@ -160,5 +177,21 @@ public class JwtUtil {
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException("유효기간이 지난 Jwt토큰에서 로그인 ID 추출하는 Json Processing중 예외 발생");
 		}
+	}
+
+	public Mono<String> createAccessToken(Member member) {
+		Date date = new Date();
+
+		long TOKEN_TIME = 20 * 60 * 1000L;
+
+		String token = BEARER_PREFIX + Jwts.builder()
+			.claim("id", member.getLoginId())
+			.claim("nickname", member.getNickname())
+			.setExpiration(new Date(date.getTime() + TOKEN_TIME))
+			.setIssuedAt(date)
+			.signWith(key, signatureAlgorithm)
+			.compact();
+
+		return Mono.just(token);
 	}
 }

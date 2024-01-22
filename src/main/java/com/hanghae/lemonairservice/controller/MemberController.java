@@ -13,6 +13,7 @@ import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
 import com.hanghae.lemonairservice.security.UserDetailsImpl;
 import com.hanghae.lemonairservice.service.MemberService;
+import com.hanghae.lemonairservice.util.ResponseMapper;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -25,17 +26,16 @@ public class MemberController {
 
 	@PostMapping("/signup")
 	public Mono<ResponseEntity<SignUpResponseDto>> signup(@RequestBody SignUpRequestDto signupRequestDto) {
-		return memberService.signup(signupRequestDto)
-			.flatMap(value -> Mono.just(ResponseEntity.ok().body(value)));
+		return memberService.signup(signupRequestDto).flatMap(ResponseMapper::mapToResponse);
 	}
 
 	@PostMapping("/login")
 	public Mono<ResponseEntity<LoginResponseDto>> login(@RequestBody LoginRequestDto loginRequestDto) {
-		return memberService.login(loginRequestDto);
+		return memberService.login(loginRequestDto).flatMap(ResponseMapper::mapToResponse);
 	}
 
 	@PostMapping("/logout")
 	public Mono<ResponseEntity<String>> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-		return memberService.logout(userDetails.getMember().getLoginId());
+		return memberService.logout(userDetails.getMember().getLoginId()).flatMap(ResponseMapper::mapToResponse);
 	}
 }
