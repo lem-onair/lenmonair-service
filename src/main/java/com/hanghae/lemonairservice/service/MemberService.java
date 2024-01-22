@@ -12,6 +12,7 @@ import com.hanghae.lemonairservice.dto.member.LoginResponseDto;
 import com.hanghae.lemonairservice.dto.member.SignUpRequestDto;
 import com.hanghae.lemonairservice.dto.member.SignUpResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
+import com.hanghae.lemonairservice.entity.MemberChannel;
 import com.hanghae.lemonairservice.exception.member.EmailAlreadyExistException;
 import com.hanghae.lemonairservice.exception.member.MemberIdAlreadyExistException;
 import com.hanghae.lemonairservice.exception.member.MemberNotFoundException;
@@ -19,6 +20,7 @@ import com.hanghae.lemonairservice.exception.member.NicknameAlreadyExistExceptio
 import com.hanghae.lemonairservice.exception.member.PasswordMismatchException;
 import com.hanghae.lemonairservice.exception.member.PasswordRetypeMismatchException;
 import com.hanghae.lemonairservice.jwt.JwtUtil;
+import com.hanghae.lemonairservice.repository.MemberChannelRepository;
 import com.hanghae.lemonairservice.repository.MemberRepository;
 import com.hanghae.lemonairservice.repository.RefreshTokenRepository;
 
@@ -36,7 +38,7 @@ public class MemberService {
 	private final JwtUtil jwtUtil;
 
 	private final MemberRepository memberRepository;
-	private final MemberChannelService memberChannelService;
+	private final MemberChannelRepository memberChannelRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 
 	@Transactional
@@ -56,7 +58,8 @@ public class MemberService {
 						() -> Mono.error(new MemberIdAlreadyExistException(signupRequestDto.getLoginId())));
 				} else {
 					return saveMember(signupRequestDto).flatMap(
-						saveMember -> memberChannelService.createMemberChannel(saveMember)
+						saveMember -> memberChannelRepository.save(new MemberChannel(saveMember))
+							.onErrorResume(exception -> Mono.error(new RuntimeException("user의 channel 생성 오류")))
 							.then(Mono.just(new SignUpResponseDto(saveMember.getStreamKey()))));
 				}
 			}));
@@ -93,11 +96,6 @@ public class MemberService {
 			.publishOn(Schedulers.boundedElastic())
 			.onErrorResume(throwable -> Mono.error(
 				new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입에 실패했습니다.")));
-	}
-
-	public Mono<Member> findById(Long memberId) {
-		return memberRepository.findById(memberId)
-			.switchIfEmpty(Mono.defer(() -> Mono.error(new MemberNotFoundException("회원 정보를 찾을 수 없습니다."))));
 	}
 
 }
