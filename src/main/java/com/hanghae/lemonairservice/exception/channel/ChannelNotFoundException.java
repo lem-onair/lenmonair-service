@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import com.hanghae.lemonairservice.exception.ExpectedException;
 
 public class ChannelNotFoundException extends ExpectedException {
-	public ChannelNotFoundException(String message) {
-		super(HttpStatus.NOT_FOUND, message);
+	public ChannelNotFoundException() {
+		super(HttpStatus.NOT_FOUND, "채널이 존재하지 않습니다.");
 	}
 }
