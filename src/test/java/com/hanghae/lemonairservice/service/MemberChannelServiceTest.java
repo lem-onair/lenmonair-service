@@ -33,8 +33,11 @@ class MemberChannelServiceTest {
 	@Test
 	void getChannelsByOnAirTrueSuccessTest() {
 		// given
-		MemberChannel memberChannel1 = MemberChannel.builder().id(11L).memberId(1L).onAir(true).title("title1").build();
-		MemberChannel memberChannel2 = MemberChannel.builder().id(12L).memberId(2L).onAir(true).title("title2").build();
+		MemberChannel memberChannel1 = MemberChannel.builder().id(11L).memberId(1L).title("title1").build();
+		MemberChannel memberChannel2 = MemberChannel.builder().id(12L).memberId(2L).title("title2").build();
+		
+		memberChannel1.onAir();
+		memberChannel2.onAir();
 
 		Member member1 = Member.builder().id(1L).email("email1").nickname("nickname1").loginId("loginId1").build();
 		Member member2 = Member.builder().id(2L).email("email2").nickname("nickname2").loginId("loginId2").build();

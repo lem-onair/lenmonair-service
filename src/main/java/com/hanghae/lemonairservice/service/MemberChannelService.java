@@ -9,7 +9,7 @@ import com.hanghae.lemonairservice.dto.channel.MemberChannelDetailResponseDto;
 import com.hanghae.lemonairservice.dto.channel.MemberChannelResponseDto;
 import com.hanghae.lemonairservice.entity.Member;
 import com.hanghae.lemonairservice.entity.MemberChannel;
-import com.hanghae.lemonairservice.exception.channel.ChannelEndedException;
+import com.hanghae.lemonairservice.exception.channel.BroadcastEndedException;
 import com.hanghae.lemonairservice.exception.channel.ChannelNotFoundException;
 import com.hanghae.lemonairservice.exception.channel.ChannelSaveFailedException;
 import com.hanghae.lemonairservice.exception.channel.NoOnAirChannelException;
@@ -31,7 +31,8 @@ public class MemberChannelService {
 
 	public Mono<MemberChannel> createMemberChannel(Member member) {
 		return memberChannelRepository.save(new MemberChannel(member))
-			.onErrorResume(exception -> Mono.error(new ChannelSaveFailedException(member.getId().toString())));
+			.onErrorResume(
+				exception -> Mono.error(new ChannelSaveFailedException("member id :" + member.getId().toString())));
 	}
 
 	public Mono<List<MemberChannelResponseDto>> getChannelsByOnAirTrue() {
@@ -45,14 +46,28 @@ public class MemberChannelService {
 	}
 
 	public Mono<MemberChannelDetailResponseDto> getChannelDetail(Long channelId) {
-		return memberChannelRepository.findById(channelId)
-			.switchIfEmpty(Mono.defer(() -> Mono.error(new ChannelNotFoundException("해당 방송이 존재하지 않습니다."))))
-			.filter(MemberChannel::getOnAir)
-			.switchIfEmpty(Mono.defer(() -> Mono.error(new ChannelEndedException("해당 방송은 종료되었습니다."))))
+		return findById(channelId).filter(MemberChannel::getOnAir)
+			.switchIfEmpty(Mono.defer(() -> Mono.error(new BroadcastEndedException("해당 방송은 종료되었습니다."))))
 			.flatMap(findMemberChannel -> memberService.findById(findMemberChannel.getMemberId())
 				.doOnNext(findMemberChannel::setMember)
 				.then(Mono.just(new MemberChannelDetailResponseDto(findMemberChannel,
 					getM3U8CloudFrontUrl(findMemberChannel.getMember().getLoginId())))));
+	}
+
+	public Mono<MemberChannel> findById(Long channelId) {
+		return memberChannelRepository.findById(channelId)
+			.switchIfEmpty(Mono.defer(() -> Mono.error(ChannelNotFoundException::new)));
+	}
+
+	public Mono<MemberChannel> save(MemberChannel memberChannel) {
+		return memberChannelRepository.save(memberChannel)
+			.onErrorResume(
+				throwable -> Mono.error(new ChannelSaveFailedException("memberChannel id : " + memberChannel.getId())));
+	}
+
+	public Mono<MemberChannel> findByMemberId(Long memberId) {
+		return memberChannelRepository.findByMemberId(memberId)
+			.switchIfEmpty(Mono.defer(() -> Mono.error(ChannelNotFoundException::new)));
 	}
 
 	private String getThumbnailCloudFrontUrl(String streamerLoginId) {

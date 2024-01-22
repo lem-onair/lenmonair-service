@@ -100,6 +100,12 @@ public class MemberService {
 			.switchIfEmpty(Mono.defer(() -> Mono.error(new MemberNotFoundException("회원 정보를 찾을 수 없습니다."))));
 	}
 
+	public Mono<Member> findByLoginId(String memberLoginId) {
+		return memberRepository.findByLoginId(memberLoginId)
+			.switchIfEmpty(Mono.defer(
+				() -> Mono.error(new MemberNotFoundException(memberLoginId + " 해당하는 id의 회원 정보를 찾을 수 없습니다."))));
+	}
+
 }
 
 

@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 
 import com.hanghae.lemonairservice.exception.ExpectedException;
 
-public class ChannelEndedException extends ExpectedException {
-	public ChannelEndedException(String message) {
+public class BroadcastEndedException extends ExpectedException {
+	public BroadcastEndedException(String message) {
 		super(HttpStatus.NOT_FOUND, message);
 	}
 }
